@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="38712070-2f24-4449-9ce6-cdafa55bcba3" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/Articles.py" beforeDir="false" afterPath="$PROJECT_DIR$/Articles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dataset/arm_pool_generator_MF_collaboration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Dataset/arm_pool_generator_MF_collaboration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DatasetRewardManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/DatasetRewardManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DiffList/BaseDiffList.py" beforeDir="false" afterPath="$PROJECT_DIR$/DiffList/BaseDiffList.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DiffList/DiffListClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/DiffList/DiffListClasses.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DiffList/DiffManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/DiffList/DiffManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LastFM_util_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/LastFM_util_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Recommendation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Recommendation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RewardManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/RewardManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Rewards/LinearReward.py" beforeDir="false" afterPath="$PROJECT_DIR$/Rewards/LinearReward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Rewards/Reward.py" beforeDir="false" afterPath="$PROJECT_DIR$/Rewards/Reward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Rewards/SocialLinearReward.py" beforeDir="false" afterPath="$PROJECT_DIR$/Rewards/SocialLinearReward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Simulation_save_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/Simulation_save_file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Users/CoUsers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Users/CoUsers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Users/Users.py" beforeDir="false" afterPath="$PROJECT_DIR$/Users/Users.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/YahooExp_util_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/YahooExp_util_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/YahooRewardManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/YahooRewardManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/custom_errors.py" beforeDir="false" afterPath="$PROJECT_DIR$/custom_errors.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/BaseAlg.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/BaseAlg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/CLUB.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/CLUB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/CoLin.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/CoLin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/FairUCB.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/FairUCB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/GOBLin.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/GOBLin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/LinPHE.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/LinPHE.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/LinUCB.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/LinUCB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/PTS.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/PTS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/TCopy.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/TCopy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/ThompsonSampling.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ThompsonSampling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/UCBPMF.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/UCBPMF.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/factorUCB.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/factorUCB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/hLinUCB.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/hLinUCB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/util_functions.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1qCLhNLMvZC16a6BQdgPh1PtDIx" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="38712070-2f24-4449-9ce6-cdafa55bcba3" name="Default Changelist" comment="" />
+      <created>1616578743495</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1616578743495</updated>
+      <workItem from="1616578745284" duration="3738000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
