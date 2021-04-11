@@ -110,7 +110,8 @@ class YahooRewardManager():
         #       if args.load:
         #           if int(dataDay)< finished_day:
         #               continue
-            fileName = Yahoo_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay + '.' + str(userNum) +'.userID'
+        #     fileName = Yahoo_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay + '.' + str(userNum) +'.userID'
+            fileName = os.path.join(Yahoo_address,"ydata-fp-td-clicks-v1_0.20090507")
             #fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
 
             #fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
@@ -137,8 +138,8 @@ class YahooRewardManager():
                     #    if i< finished_line:
                     #       continue
                     totalObservations += 1
-
-                    tim, article_chosen, click, currentUserID, pool_articles = parseLine_ID(line)
+                    currentUserID = 1
+                    tim, article_chosen, click, userfeatures, pool_articles = parseLine(line)
                     #currentUser_featureVector = user_features[:-1]
                     #currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)
                     #-----------------------------Pick an article (CoLinUCB, LinUCB, Random)-------------------------
@@ -148,7 +149,7 @@ class YahooRewardManager():
                     # Create articles pool
                     for article in pool_articles:
                         article_featureVector = np.asarray(article[1:6])
-                        user_featureVector = userFeatureVectors[currentUserID]
+                        user_featureVector = userfeatures
                         combined_featureVector = np.outer(article_featureVector, user_featureVector).flatten()
                         # We can choose the feature vector to be an outer product of the article and user vector if we want more information
                         #combined_featureVector= np.asarray(article[1:6])
