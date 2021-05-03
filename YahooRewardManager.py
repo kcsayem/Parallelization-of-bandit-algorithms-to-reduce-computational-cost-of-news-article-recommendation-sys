@@ -47,6 +47,7 @@ class YahooRewardManager():
         for key in arg_dict:
             setattr(self, key, arg_dict[key])
         self.nClusters = 100
+        self.currentUserID = -1
 
     def runAlgorithms(self, algorithms, diffLists):
         print(algorithms)
@@ -81,7 +82,8 @@ class YahooRewardManager():
 
         tstart = datetime.datetime.now()
         timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')     # the current data time
-        dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+        # dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+        dataDays = ['01']
 
         articleTruePositve = {}
         articleFalseNegative = {}
@@ -131,6 +133,8 @@ class YahooRewardManager():
 
             #print (fileName, fileNameWrite)
             print(fileName)
+            randomCTRList = []
+            algCTRList = []
             with open(fileName, 'r') as f:
                 # reading file line ie observations running one at a time
                 for i, line in enumerate(f, 1):
@@ -138,7 +142,9 @@ class YahooRewardManager():
                     #    if i< finished_line:
                     #       continue
                     totalObservations += 1
-                    currentUserID = 1
+                    self.currentUserID+=1
+                    if self.currentUserID>=200000:
+                        break
                     tim, article_chosen, click, userfeatures, pool_articles = parseLine(line)
                     #currentUser_featureVector = user_features[:-1]
                     #currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)
@@ -170,37 +176,40 @@ class YahooRewardManager():
                     articles_random.learn_stats.addrecord(click)
 
                     for alg_name, alg in list(algorithms.items()):
-                        pickedArticle = alg.createRecommendation(articlePool, currentUserID, self.k)
+                        pickedArticle = alg.createRecommendation(articlePool, self.currentUserID, self.k)
                         pickedArticle = pickedArticle.articles[0]
 
                         if (pickedArticle.id == article_chosen):
                             alg.learn_stats.addrecord(click)
-                            alg.updateParameters(pickedArticle, click, currentUserID)
+                            alg.updateParameters(pickedArticle, click, self.currentUserID)
                             calculateStat()
 
                     totalObservations += 1
-
                     #Record current click through rate
-                    if totalObservations % 2000 == 0:
-                        articles_random.learn_stats.updateCTR()
-                        for alg in list(algorithms.values()):
-                            algCTR = alg.learn_stats.updateCTR()
+                    # if totalObservations % 2000 == 0:
+                    randomCTRList.append(articles_random.learn_stats.updateCTR())
+                    for alg in list(algorithms.values()):
+                        algCTRList.append(alg.learn_stats.updateCTR())
                 #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
                 printWrite()
+                plot_results(algorithms, articles_random,algCTRList,randomCTRList)
 
 
-def plot_results(algorithms, random):
-    num_data_points = len(random.learn_stats.cumulative_CTR_list)
+def plot_results(algorithms, random,algList, randomList):
+    # num_data_points = len(random.learn_stats.cumulative_CTR_list)
+    print(f"algList -> {algList} and randomList -> {randomList}")
+    num_data_points = len(randomList)
     tim_ = [i for i in range(num_data_points)]
-    random_CTR_list = random.learn_stats.cumulative_CTR_list
-
+    # random_CTR_list = random.learn_stats.cumulative_CTR_list
+    random_CTR_list = randomList
     f, axa = plt.subplots(1, sharex=True)
     for alg_name, alg in list(algorithms.items()):
-        alg_CTR_list = alg.learn_stats.cumulative_CTR_list
-        alg_normalized_CTR = [alg_CTR/rand_CTR for alg_CTR, rand_CTR in zip(alg_CTR_list, random_CTR_list)]
+        # alg_CTR_list = alg.learn_stats.cumulative_CTR_list
+        alg_CTR_list = algList
+        alg_normalized_CTR = [alg_CTR/rand_CTR if rand_CTR!=0 else 0 for alg_CTR, rand_CTR in zip(alg_CTR_list, random_CTR_list)]
         axa.plot(tim_, alg_normalized_CTR, label=alg_name)
     plt.xlabel('time')
     plt.ylabel('CTR-Ratio')
     plt.legend(loc = 'lower right')
-    plt.title('Yahoo 160 Users')
+    plt.title('Yahoo 200000 Users')
     plt.show()
