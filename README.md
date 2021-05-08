@@ -1,3 +1,33 @@
+# Implementation
+## Epsilon-Greedy
+```bash
+cd my_imp/
+```
+```bash
+python3 epsilon-greedy.py "[p1,p2,p3...]"
+```
+Example:
+```bash
+python3 epsilon-greedy.py "[0.1,0.4,0.9]"
+```
+Compare epsilon value performance
+```bash
+python3 comparing-epsilon.py "[p1,p2,p3...]" "[eps1,eps2,eps3...]"
+```
+Example:
+```bash
+python3 comparing-epsilon.py "[0.25,0.10,0.45]" "[0.01,0.1,0.5]"
+```
+## UCB1
+```bash
+python3 ucb1.py "[p1,p2,p3...]"
+```
+Example:
+```bash
+python3 ucb1.py "[0.25,0.10,0.45]"
+```
+
+
 # BanditLib
 This repo contains the implementation of serveral contextual bandits algorithm, including CoLin, hLinUCB, factorUCB, GOB.Lin, LinUCB, HybridLinUCB, PTS, and UCBPMF. CoLin, hLinUCB and factorUCB are our proposed algorithms published in [1], [2], [3]. We are updating the library and current version may have bugs. You can also check a stable release here: https://github.com/huazhengwang/BanditLib/releases/tag/1.0
 
