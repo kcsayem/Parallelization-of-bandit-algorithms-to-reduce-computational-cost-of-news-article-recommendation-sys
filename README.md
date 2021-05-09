@@ -26,7 +26,14 @@ Example:
 ```bash
 python3 ucb1.py "[0.25,0.10,0.45]"
 ```
-
+## LinUCB
+```bash
+python3 linucb.py "[alpha1, alpha2, alpha3...]"
+```
+Example:
+```bash
+python3 linucb.py "[0.1,0.5,1]"
+```
 
 # BanditLib
 This repo contains the implementation of serveral contextual bandits algorithm, including CoLin, hLinUCB, factorUCB, GOB.Lin, LinUCB, HybridLinUCB, PTS, and UCBPMF. CoLin, hLinUCB and factorUCB are our proposed algorithms published in [1], [2], [3]. We are updating the library and current version may have bugs. You can also check a stable release here: https://github.com/huazhengwang/BanditLib/releases/tag/1.0
