@@ -3,3 +3,5 @@
 *.pyc
 ./SimulationResults/*
 /SimulationResults/
+./.idea/*
+./.idea/
