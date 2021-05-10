@@ -24,11 +24,10 @@ class Bandit:
 
 
 def run_experiment(BANDIT_PROBABILITIES, epsilons, N):
-    bandits = [Bandit(p) for p in BANDIT_PROBABILITIES]
-
-    data = np.empty(N)
     cumulatives = []
     for eps in epsilons:
+        data = np.empty(N)
+        bandits = [Bandit(p) for p in BANDIT_PROBABILITIES]
         print(f"Trying with {eps}")
         for i in range(N):
             # epsilon greedy
@@ -47,13 +46,14 @@ def run_experiment(BANDIT_PROBABILITIES, epsilons, N):
         # plot moving average ctr
         plt.plot(cumulative_average,label=f"eps = {eps}")
         for i, p in enumerate(BANDIT_PROBABILITIES):
-            plt.plot(np.ones(N) * p,label=f"p{i} = {p}")
+            plt.plot(np.ones(N) * p,label=f"m{i} = {p}")
             plt.xscale('log')
         plt.legend()
         plt.title("Log scale plot")
         plt.show()
         for b in bandits:
             print(f"mean estimate: {b.mean}")
+        print(f"Cumulative Average: {cumulative_average.sum()/N}")
 
     return cumulatives
 def plot_res(res,epsilons,scale):
