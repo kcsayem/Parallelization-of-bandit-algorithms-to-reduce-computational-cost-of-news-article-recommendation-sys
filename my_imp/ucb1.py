@@ -56,6 +56,8 @@ def run_experiment():
     cumulative_average = np.cumsum(rewards) / (np.arange(NUM_TRIALS) + 1)
 
     # plot moving average ctr
+    plt.xlabel("Times", fontsize=12)
+    plt.ylabel("Cumulative Rewards", fontsize=12)
     plt.plot(cumulative_average,label="Cumulative Win Rate")
     plt.plot(np.ones(NUM_TRIALS) * np.max(BANDIT_PROBABILITIES), label="Max Win Rate")
     plt.legend()
