@@ -50,6 +50,8 @@ def run_experiment(BANDIT_PROBABILITIES, epsilons, N):
             plt.xscale('log')
         plt.legend()
         plt.title("Log scale plot")
+        plt.xlabel("Times", fontsize=12)
+        plt.ylabel("Cumulative Rewards", fontsize=12)
         plt.show()
         for b in bandits:
             print(f"mean estimate: {b.mean}")
@@ -59,8 +61,11 @@ def run_experiment(BANDIT_PROBABILITIES, epsilons, N):
 def plot_res(res,epsilons,scale):
     for i in range(len(res)):
         plt.plot(res[i], label=f'eps = {epsilons[i]}')
+
     plt.title(f"{str.upper(scale)} scale plot")
     plt.xscale(scale)
+    plt.xlabel("Times", fontsize=12)
+    plt.ylabel("Cumulative Rewards", fontsize=12)
     plt.legend()
     plt.show()
 

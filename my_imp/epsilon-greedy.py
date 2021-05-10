@@ -79,6 +79,8 @@ def experiment():
     plt.plot(win_rates,label="Cumulative Win Rate")
     plt.plot(np.ones(NUM_TRIALS) * np.max(BANDIT_PROBABILITIES),label="Max Win Rate")
     plt.title("Log scale plot")
+    plt.xlabel("Times", fontsize=12)
+    plt.ylabel("Cumulative Rewards", fontsize=12)
     plt.xscale("log")
     plt.legend()
     plt.show()
