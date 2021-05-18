@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import ast
-NUM_TRIALS = 100000
+NUM_TRIALS = 10000
 EPS = 0.1
 BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
 
@@ -56,12 +56,12 @@ def run_experiment():
     cumulative_average = np.cumsum(rewards) / (np.arange(NUM_TRIALS) + 1)
 
     # plot moving average ctr
-    plt.xlabel("Times", fontsize=12)
+    plt.xlabel("Trials", fontsize=12)
     plt.ylabel("Cumulative Rewards", fontsize=12)
-    plt.plot(cumulative_average,label="Cumulative Win Rate")
-    plt.plot(np.ones(NUM_TRIALS) * np.max(BANDIT_PROBABILITIES), label="Max Win Rate")
+    plt.plot(cumulative_average,label=f"Estimated Win Rate = {rewards.sum() / NUM_TRIALS}")
+    plt.plot(np.ones(NUM_TRIALS) * np.max(BANDIT_PROBABILITIES), label=f"Max Win Rate = {np.max(BANDIT_PROBABILITIES)}")
     plt.legend()
-    plt.title("Log scale plot")
+    plt.title(f"Log scale plot ( Trials = {NUM_TRIALS} )")
     plt.xscale('log')
     plt.show()
 

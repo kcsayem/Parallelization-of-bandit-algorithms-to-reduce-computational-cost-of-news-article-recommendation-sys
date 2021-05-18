@@ -58,22 +58,22 @@ def run_experiment(BANDIT_PROBABILITIES, epsilons, N):
         print(f"Cumulative Average: {cumulative_average.sum()/N}")
 
     return cumulatives
-def plot_res(res,epsilons,scale):
+def plot_res(res,epsilons,means,scale):
     for i in range(len(res)):
-        plt.plot(res[i], label=f'eps = {epsilons[i]}')
-
-    plt.title(f"{str.upper(scale)} scale plot")
+        plt.plot(res[i], label=f'EPS = {epsilons[i]}, Estimated Mean = {round(res[i].sum()/10000,3)}')
+    plt.plot(np.ones(10000) * np.max(means), label=f"Max Mean = {np.max(means)}")
+    plt.title(f"{str.upper(scale)} scale plot ( Trials = {10000} )")
     plt.xscale(scale)
-    plt.xlabel("Times", fontsize=12)
+    plt.xlabel("Trials", fontsize=12)
     plt.ylabel("Cumulative Rewards", fontsize=12)
     plt.legend()
     plt.show()
 
 if __name__ == '__main__':
     argv = sys.argv
-    probabilities = ast.literal_eval(argv[1])
+    means = ast.literal_eval(argv[1])
     epsilons = ast.literal_eval(argv[2])
-    res = run_experiment(probabilities, epsilons, 100000)
-    plot_res(res,epsilons,"log")
+    res = run_experiment(means, epsilons, 10000)
+    plot_res(res,epsilons,means,"log")
     # plot_res(res,epsilons,"linear")
 
