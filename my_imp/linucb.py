@@ -139,7 +139,7 @@ if __name__ == "__main__":
         aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=100, alpha=alpha,
                                                                              data_path=data_path)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))
-    plt.ylabel("CTR ratio")
+    plt.ylabel("CTR ratio (For Theta in each arm)")
     plt.xlabel("Time")
     plt.legend()
     plt.show()
