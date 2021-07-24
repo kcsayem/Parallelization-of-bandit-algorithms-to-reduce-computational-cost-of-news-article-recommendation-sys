@@ -13,9 +13,7 @@ class linucb_arm():
 
         # Keep track of alpha
         self.alpha = alpha
-
-
-
+        self.N = 0
 
     def calc_UCB(self, x_array, theta, A):
         # Find A inverse for ridge regression
@@ -30,7 +28,8 @@ class linucb_arm():
 
         return p
 
-
+    def update(self):
+        self.N += 1
 
 
 class linucb_policy():
@@ -38,7 +37,7 @@ class linucb_policy():
     def __init__(self, K_arms, d, alpha):
         self.K_arms = K_arms
         self.linucb_arms = [linucb_arm(arm_index=i, d=d, alpha=alpha) for i in range(K_arms)]
-        self.choosen_arm = -1
+        self.chosen_arm = -1
         self.d = d
         self.theta = -1
 
@@ -53,10 +52,12 @@ class linucb_policy():
     def calc_theta(self):
         A_inv = np.linalg.inv(self.A)
         self.theta = np.dot(A_inv, self.b)
+        return self.theta
 
     def reward_update(self, reward, x_array):
         # Reshape covariates input into (d x 1) shape vector
-        x = x_array.reshape([-1, 1])
+        split_array = np.array_split(x_array, 10)
+        x = split_array[self.chosen_arm][:].reshape([-1, 1])
 
         # Update A which is (d * d) matrix.
         self.A += np.dot(x, x.T)
@@ -65,22 +66,22 @@ class linucb_policy():
         # reward is scalar
         self.b += reward * x
 
-
+    def printBandits(self):
+        print("num times selected each bandit:", [b.N for b in self.linucb_arms])
 
     def select_arm(self, x_array):
         # Initiate ucb to be 0
-        highest_ucb = -1
+        highest_ucb = -10
 
         # Track index of arms to be selected on if they have the max UCB.
         candidate_arms = []
-
-        self.calc_theta()
-
+        split_array = np.array_split(x_array, 10)
+        theta = self.calc_theta()
 
         for arm_index in range(self.K_arms):
             # Calculate ucb based on each arm using current covariates at time t
-            arm_ucb = self.linucb_arms[arm_index].calc_UCB(x_array, self.theta, self.A)
-
+            arm_ucb = self.linucb_arms[arm_index].calc_UCB(np.reshape(split_array[arm_index][:], (self.d, 1)), theta,
+                                                           self.A)
             # If current arm is highest than current highest_ucb
             if arm_ucb > highest_ucb:
                 # Set new max ucb
@@ -91,12 +92,13 @@ class linucb_policy():
 
             # If there is a tie, append to candidate_arms
             if arm_ucb == highest_ucb:
-                candidate_arms.append(arm_index)
+                if arm_index not in candidate_arms:
+                    candidate_arms.append(arm_index)
 
         # Choose based on candidate_arms randomly (tie breaker)
         chosen_arm = np.random.choice(candidate_arms)
-
-        self.choosen_arm =  chosen_arm
+        self.linucb_arms[chosen_arm].update()
+        self.chosen_arm = chosen_arm
 
         return chosen_arm
 
@@ -128,7 +130,6 @@ def ctr_simulator(K_arms, d, alpha, data_path):
             covariate_string_list = line_data.split()[2:]
             data_x_array = np.array([float(covariate_elem) for covariate_elem in covariate_string_list])
 
-
             # Find policy's chosen arm based on input covariates at current time step
             arm_index = linucb_policy_object.select_arm(data_x_array)
 
@@ -142,7 +143,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
                 aligned_time_steps += 1
                 cumulative_rewards += data_reward
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
-
+    linucb_policy_object.printBandits()
     return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object
 
 
@@ -152,8 +153,9 @@ if __name__ == "__main__":
     data_path = "data/news_dataset.txt"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
-        aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=100, alpha=alpha,
+        aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=10, alpha=alpha,
                                                                              data_path=data_path)
+        print("Cumulative Reward: ", cum_rewards)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))
     plt.ylabel("CTR ratio (For Single Theta)")
     plt.xlabel("Time")
