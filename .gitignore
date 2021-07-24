@@ -1,7 +1,5 @@
 .project
 .pydevproject
 *.pyc
-./SimulationResults/*
-/SimulationResults/
-./.idea/*
-./.idea/
+SimulationResults/
+.idea/
