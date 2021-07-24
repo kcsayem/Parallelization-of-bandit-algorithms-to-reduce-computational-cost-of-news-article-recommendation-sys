@@ -14,19 +14,12 @@ class linucb_arm():
         # Keep track of alpha
         self.alpha = alpha
 
-        # A: (d x d) matrix = D_a.T * D_a + I_d.
-        # The inverse of A is used in ridge regression
-        self.A = np.identity(d)
-
-        # b: (d x 1) corresponding response vector.
-        # Equals to D_a.T * c_a in ridge regression formulation
-        self.b = np.zeros([d, 1])
 
 
 
-    def calc_UCB(self, x_array, theta):
+    def calc_UCB(self, x_array, theta, A):
         # Find A inverse for ridge regression
-        A_inv = np.linalg.inv(self.A)
+        A_inv = np.linalg.inv(A)
 
         # Reshape covariates input into (d x 1) shape vector
         x = x_array.reshape([-1, 1])
@@ -36,6 +29,30 @@ class linucb_arm():
         p = np.dot(theta.T, x) + self.alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
 
         return p
+
+
+
+
+class linucb_policy():
+
+    def __init__(self, K_arms, d, alpha):
+        self.K_arms = K_arms
+        self.linucb_arms = [linucb_arm(arm_index=i, d=d, alpha=alpha) for i in range(K_arms)]
+        self.choosen_arm = -1
+        self.d = d
+        self.theta = -1
+
+        # A: (d x d) matrix = D_a.T * D_a + I_d.
+        # The inverse of A is used in ridge regression
+        self.A = np.identity(d)
+
+        # b: (d x 1) corresponding response vector.
+        # Equals to D_a.T * c_a in ridge regression formulation
+        self.b = np.zeros([d, 1])
+
+    def calc_theta(self):
+        A_inv = np.linalg.inv(self.A)
+        self.theta = np.dot(A_inv, self.b)
 
     def reward_update(self, reward, x_array):
         # Reshape covariates input into (d x 1) shape vector
@@ -47,36 +64,6 @@ class linucb_arm():
         # Update b which is (d x 1) vector
         # reward is scalar
         self.b += reward * x
-
-
-class linucb_policy():
-
-    def __init__(self, K_arms, d, alpha):
-        self.K_arms = K_arms
-        self.linucb_arms = [linucb_arm(arm_index=i, d=d, alpha=alpha) for i in range(K_arms)]
-        self.choosen_arm = None
-        self.d = d
-        self.theta = None
-
-    def calc_theta(self):
-        # initializing theta
-        if self.choosen_arm is None:
-            A = np.identity(self.d)
-            b = np.zeros([self.d, 1])
-            # Find A inverse for ridge regression
-            A_inv = np.linalg.inv(A)
-            theta = np.dot(A_inv, b)
-        # calculating it for each other case
-        else:
-            A = self.linucb_arms[self.choosen_arm].A
-            b = self.linucb_arms[self.choosen_arm].b
-            A_inv = np.linalg.inv(A)
-            theta = np.dot(A_inv, b)
-
-        # print('A= ', A)
-        # print('b= ', b)
-        self.theta = theta
-        # return theta
 
 
 
@@ -92,7 +79,7 @@ class linucb_policy():
 
         for arm_index in range(self.K_arms):
             # Calculate ucb based on each arm using current covariates at time t
-            arm_ucb = self.linucb_arms[arm_index].calc_UCB(x_array, self.theta)
+            arm_ucb = self.linucb_arms[arm_index].calc_UCB(x_array, self.theta, self.A)
 
             # If current arm is highest than current highest_ucb
             if arm_ucb > highest_ucb:
@@ -149,7 +136,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
             # Note that data_arms index range from 1 to 10 while policy arms index range from 0 to 9.
             if arm_index + 1 == data_arm:
                 # Use reward information for the chosen arm to update
-                linucb_policy_object.linucb_arms[arm_index].reward_update(data_reward, data_x_array)
+                linucb_policy_object.reward_update(data_reward, data_x_array)
 
                 # For CTR calculation
                 aligned_time_steps += 1
