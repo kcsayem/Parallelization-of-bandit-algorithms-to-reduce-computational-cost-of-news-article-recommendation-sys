@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import ast
+from tqdm import tqdm
 
 
 # Create class object for a single linear ucb   arm
@@ -18,14 +19,15 @@ class linucb_arm():
     def calc_UCB(self, x_array, theta, A):
         # Find A inverse for ridge regression
         A_inv = np.linalg.inv(A)
+        # print("A:", A)
 
         # Reshape covariates input into (d x 1) shape vector
         x = x_array.reshape([-1, 1])
-
+        # print("x:",x)
         # Find ucb based on p formulation (mean + std_dev)
         # p is (1 x 1) dimension vector
         p = np.dot(theta.T, x) + self.alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
-
+        # print('p:',p)
         return p
 
     def update(self):
@@ -39,7 +41,7 @@ class linucb_policy():
         self.linucb_arms = [linucb_arm(arm_index=i, d=d, alpha=alpha) for i in range(K_arms)]
         self.chosen_arm = -1
         self.d = d
-        self.theta = -1
+        self.theta = None
 
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
@@ -95,7 +97,14 @@ class linucb_policy():
                 if arm_index not in candidate_arms:
                     candidate_arms.append(arm_index)
 
+            # if len(candidate_arms) == 0:
+            #     print('A', self.A)
+            #     print('b', self.b)
+            #     print('theta', self.theta)
+            #     print('arm_ucb', arm_ucb)
+
         # Choose based on candidate_arms randomly (tie breaker)
+        # print('last step:', candidate_arms)
         chosen_arm = np.random.choice(candidate_arms)
         self.linucb_arms[chosen_arm].update()
         self.chosen_arm = chosen_arm
@@ -116,7 +125,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     # Open data
     with open(data_path, "r") as f:
 
-        for line_data in f:
+        for line_data in tqdm(f):
 
             # 1st column: Logged data arm.
             # Integer data type
