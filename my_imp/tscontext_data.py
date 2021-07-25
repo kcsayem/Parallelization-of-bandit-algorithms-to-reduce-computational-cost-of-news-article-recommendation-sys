@@ -6,6 +6,7 @@ from scipy.stats import beta, multivariate_normal
 import ast, sys, random
 import math
 import pandas as pd
+from tqdm import tqdm
 
 NUM_TRIALS = 2000
 
@@ -99,7 +100,7 @@ def experiment():
         cumulative_rewards = 0
         aligned_ctr = []
         f = open(data_path, "r")
-        for line_data in f:
+        for line_data in tqdm(f):
 
             # 1st column: Logged data arm.
             # Integer data type
