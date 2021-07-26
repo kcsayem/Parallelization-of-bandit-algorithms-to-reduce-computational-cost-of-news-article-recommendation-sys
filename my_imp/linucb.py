@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import ast
+from tqdm import tqdm
 
 
 # Create class object for a single linear ucb disjoint arm
@@ -99,7 +100,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     # Open data
     with open(data_path, "r") as f:
 
-        for line_data in f:
+        for line_data in tqdm(f):
 
             # 1st column: Logged data arm.
             # Integer data type
@@ -138,6 +139,8 @@ if __name__ == "__main__":
         print(f"Trying with alpha = {alpha}")
         aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=100, alpha=alpha,
                                                                              data_path=data_path)
+
+        print("Cumulative Reward: ", cum_rewards)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))
     plt.ylabel("CTR ratio (For Theta in each arm)")
     plt.xlabel("Time")

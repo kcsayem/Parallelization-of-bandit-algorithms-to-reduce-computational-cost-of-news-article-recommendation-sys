@@ -127,6 +127,8 @@ def experiment():
         plt.plot(aligned_ctr, label=f"R = {R}")
         print("total reward earned:", cumulative_rewards)
         ts.printBandits()
+    plt.ylabel("CTR ratio (For Thompson Sampling)")
+    plt.xlabel("Time")
     plt.legend()
     plt.show()
 if __name__ == "__main__":
