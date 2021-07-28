@@ -43,6 +43,7 @@ class linucb_policy():
         self.chosen_arm = -1
         self.d = d
         self.theta = None
+        # Random Arm Context Generation
         self.arm_context = [np.random.random((self.d, 1)) for i in range(0,self.K_arms)]
 
 
@@ -59,11 +60,10 @@ class linucb_policy():
         self.theta = np.dot(A_inv, self.b)
         return self.theta
 
-    def reward_update(self, reward, x_array):
+    def reward_update(self, reward, x):
         # Reshape covariates input into (d x 1) shape vector
-        # split_array = np.array_split(x_array, 10)
-        # x = split_array[self.chosen_arm][:].reshape([-1, 1])
-        x = x_array
+        x = x.reshape([-1, 1])
+
         # Update A which is (d * d) matrix.
         self.A += np.dot(x, x.T)
 
@@ -109,12 +109,6 @@ class linucb_policy():
             if arm_ucb == highest_ucb:
                 if arm_index not in candidate_arms:
                     candidate_arms.append(arm_index)
-
-            # if len(candidate_arms) == 0:
-            #     print('A', self.A)
-            #     print('b', self.b)
-            #     print('theta', self.theta)
-            #     print('arm_ucb', arm_ucb)
 
         # Choose based on candidate_arms randomly (tie breaker)
         # print('last step:', candidate_arms)
@@ -178,7 +172,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
 if __name__ == "__main__":
     argv = sys.argv
     # alpha_inputs = ast.literal_eval(argv[1])
-    alpha_inputs = [0.1, 0.2, 0.4, 0.5, 0.9]
+    alpha_inputs = [0.1, 0.2, 0.4, 0.5, 0.9,1.5]
     data_path = "data/news_dataset.txt"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
@@ -187,6 +181,6 @@ if __name__ == "__main__":
         print("Cumulative Reward: ", cum_rewards)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))
     plt.ylabel("CTR ratio (For Single Theta)")
-    plt.xlabel("Time")
+    plt.xlabel("Time(50 random arm covarriates)")
     plt.legend()
     plt.show()
