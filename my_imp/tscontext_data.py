@@ -10,7 +10,16 @@ from tqdm import tqdm
 
 NUM_TRIALS = 2000
 
+def parseLine(line):
+    line = line.split("|")
 
+    tim, articleID, click = line[0].strip().split(" ")
+    tim, articleID, click = int(tim), int(articleID), int(click)
+    user_features = np.array([float(x.strip().split(':')[1]) for x in line[1].strip().split(' ')[1:]])
+
+    pool_articles = [l.strip().split(" ") for l in line[2:]]
+    pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
+    return tim, articleID, click, user_features, pool_articles
 class ThompsonSampling:
     def __init__(self, contextDimension, num_of_bandits, R):
         self.d = contextDimension
@@ -131,5 +140,20 @@ def experiment():
     plt.xlabel("Time")
     plt.legend()
     plt.show()
+def yahoo_experiment(filename):
+    f = open(filename,"r")
+    for i, line in enumerate(f, 1):
+        tim, articleID, click, user_features, pool_articles = parseLine(line)
+        print(tim)
+        print()
+        print(articleID)
+        print()
+        print(click)
+        print()
+        print(user_features)
+        print()
+        print(pool_articles)
+        break
 if __name__ == "__main__":
-    experiment()
+    np.set_printoptions(suppress=True)
+    yahoo_experiment("data/data")
