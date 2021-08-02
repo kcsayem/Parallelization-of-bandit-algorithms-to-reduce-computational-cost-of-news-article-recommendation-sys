@@ -211,6 +211,18 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     linucb_policy_object.printBandits()
     return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object
 
+def makeContext(pool_articles, user_features, articles):
+    context = {}
+    for article in pool_articles:
+        if len(article) == 7 and len(user_features) == 6:
+            all_zeros = np.zeros(306)
+            for i in range(len(articles)):
+                if articles[i] == int(article[0]):
+                    all_zeros[i * 6:i * 6 + 6] = user_features
+            all_zeros[300:] = article[1:]
+            context[int(article[0])] = all_zeros
+    return context
+
 
 def yahoo_experiment(filename, alpha):
     articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
@@ -219,7 +231,7 @@ def yahoo_experiment(filename, alpha):
                 109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
     f = open(filename, "r")
     # Initiate policy
-    linucb_policy_object = linucb_policy(K_arms=50, d=6, alpha=alpha)
+    linucb_policy_object = linucb_policy(K_arms=50, d=306, alpha=alpha)
     # setup arms
     linucb_policy_object.setup_arms(articles)
     aligned_time_steps = 0
@@ -230,12 +242,12 @@ def yahoo_experiment(filename, alpha):
         tim, articleID, click, user_features, pool_articles = parseLine(line_data)
         # 1st column: Logged data arm.
         # Integer data type
-        context = {}
-        for article in pool_articles:
-            if len(article) == 7 and len(user_features) == 6:
-                # context[int(article[0])] = np.reshape(np.concatenate((user_features, article[1:])), (12, 1))
-                context[int(article[0])] = linucb_policy_object.calculate_projection(user_features, article[1:])
-                # context[int(article[0])] = np.outer(article[1:], user_features).flatten()
+        context = makeContext(pool_articles, user_features, articles)
+        # for article in pool_articles:
+        #     if len(article) == 7 and len(user_features) == 6:
+        #         # context[int(article[0])] = np.reshape(np.concatenate((user_features, article[1:])), (12, 1))
+        #         context[int(article[0])] = linucb_policy_object.calculate_projection(user_features, article[1:])
+        #         # context[int(article[0])] = np.outer(article[1:], user_features).flatten()
         # print(context)
 
         # break
@@ -261,7 +273,7 @@ if __name__ == "__main__":
     argv = sys.argv
     # alpha_inputs = ast.literal_eval(argv[1])
     # alpha_inputs = [0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
-    alpha_inputs = [0.5]
+    alpha_inputs = [0.1]
     data_path = "data/data"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
