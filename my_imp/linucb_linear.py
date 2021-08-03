@@ -44,7 +44,7 @@ class linucb_policy():
         self.d = d
         self.theta = None
         # Random Arm Context Generation
-        self.arm_context = [np.random.random((self.d, 1)) for i in range(0,self.K_arms)]
+        self.arm_context = [np.random.random((10, 1)) for i in range(0,self.K_arms)]
 
 
         # A: (d x d) matrix = D_a.T * D_a + I_d.
@@ -74,10 +74,12 @@ class linucb_policy():
     def printBandits(self):
         print("num times selected each bandit:", [b.N for b in self.linucb_arms])
 
-    def calculate_projection(self, u, v):
-        v_norm = np.sqrt(sum(v ** 2))
-        proj_on_v = (np.dot(u, v) / v_norm ** 2) * v
-        return proj_on_v
+    def calculate_projection(self,arm_index, user_features, arm_features):
+        context = np.zeros((1010, 1))
+        context[arm_index*10:arm_index*10+100] = user_features
+        context[1000:] = arm_features
+        return context
+
 
     def select_arm(self, x_array):
         # Initiate ucb to be 0
@@ -91,7 +93,7 @@ class linucb_policy():
             # Calculating projection of user on the arm
             user_context = x_array
             arm_context = self.arm_context[arm_index]
-            projection = self.calculate_projection(user_context, arm_context)
+            projection = self.calculate_projection(arm_index, user_context, arm_context)
 
             # Calculate ucb based on each arm using current covariates at time t
 
@@ -133,7 +135,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     # Open data
     with open(data_path, "r") as f:
 
-        for line_data in tqdm(f):
+        for line_data in tqdm(f, total=10000):
 
             # 1st column: Logged data arm.
             # Integer data type
@@ -156,7 +158,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
                 # calculating projection
                 user_context = data_x_array
                 arm_context = linucb_policy_object.arm_context[arm_index]
-                projection = linucb_policy_object.calculate_projection(user_context, arm_context)
+                projection = linucb_policy_object.calculate_projection(arm_index, user_context, arm_context)
                 # Use reward information for the chosen arm to update
 
                 linucb_policy_object.reward_update(data_reward, projection)
@@ -172,11 +174,11 @@ def ctr_simulator(K_arms, d, alpha, data_path):
 if __name__ == "__main__":
     argv = sys.argv
     # alpha_inputs = ast.literal_eval(argv[1])
-    alpha_inputs = [0.1, 0.2, 0.4, 0.5, 0.9,1.5]
+    alpha_inputs = [0.1]
     data_path = "data/news_dataset.txt"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
-        aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=50, alpha=alpha,
+        aligned_time_steps, cum_rewards, aligned_ctr, policy = ctr_simulator(K_arms=10, d=1010, alpha=alpha,
                                                                              data_path=data_path)
         print("Cumulative Reward: ", cum_rewards)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))

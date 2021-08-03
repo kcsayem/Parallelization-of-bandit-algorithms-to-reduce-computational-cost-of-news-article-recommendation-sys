@@ -265,7 +265,8 @@ def yahoo_experiment(filename, alpha):
     cumulative_rewards = 0
     aligned_ctr = []
     t = 1
-    for line_data in tqdm(f):
+    max_ = 3000000
+    for line_data in tqdm(f, total=max_):
         tim, articleID, click, user_features, pool_articles = parseLine(line_data)
         # 1st column: Logged data arm.
         # Integer data type
@@ -289,7 +290,7 @@ def yahoo_experiment(filename, alpha):
             aligned_ctr.append(cumulative_rewards / aligned_time_steps)
 
         t += 1
-        if t == 1000000:
+        if t == max_:
             break
 
     linucb_policy_object.printBandits()
