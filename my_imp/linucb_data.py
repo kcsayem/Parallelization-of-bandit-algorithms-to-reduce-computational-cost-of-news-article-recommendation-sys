@@ -3,31 +3,31 @@ import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
-from numba import jit
+# from numba import jit
 
-# Numba helper function for faster calculation
-@jit(nopython=True)
-def _calc_UCB(alpha, x, theta, A):
-    # Find A inverse for ridge regression
-    A_inv = np.linalg.inv(A)
-    # print("A:", A)
-
-    # Reshape covariates input into (d x 1) shape vector
-    # x = x_array.reshape([-1, 1])
-    # print("x:",x)
-    # Find ucb based on p formulation (mean + std_dev)
-    # p is (1 x 1) dimension vector
-    # print("Theta Shape", theta.shape)
-    # print("Context Shape", x_array.shape)
-    # print("A Shape", A.shape)
-    p = np.dot(theta.T, x) + alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
-    # print('p:',p)
-    return p
-@jit(nopython=True)
-def _calc_theta(A, b):
-    A_inv = np.linalg.inv(A)
-    theta = np.dot(A_inv, b)
-    return theta
+# # Numba helper function for faster calculation
+# @jit(nopython=True)
+# def _calc_UCB(alpha, x, theta, A):
+#     # Find A inverse for ridge regression
+#     A_inv = np.linalg.inv(A)
+#     # print("A:", A)
+#
+#     # Reshape covariates input into (d x 1) shape vector
+#     # x = x_array.reshape([-1, 1])
+#     # print("x:",x)
+#     # Find ucb based on p formulation (mean + std_dev)
+#     # p is (1 x 1) dimension vector
+#     # print("Theta Shape", theta.shape)
+#     # print("Context Shape", x_array.shape)
+#     # print("A Shape", A.shape)
+#     p = np.dot(theta.T, x) + alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
+#     # print('p:',p)
+#     return p
+# @jit(nopython=True)
+# def _calc_theta(A, b):
+#     A_inv = np.linalg.inv(A)
+#     theta = np.dot(A_inv, b)
+#     return theta
 
 # Create class object for a single linear ucb   arm
 class linucb_arm():
@@ -42,7 +42,7 @@ class linucb_arm():
 
     def calc_UCB(self, x_array, theta, A):
         # Find A inverse for ridge regression
-        # A_inv = np.linalg.inv(A)
+        A_inv = np.linalg.inv(A)
         # # print("A:", A)
         #
         # # Reshape covariates input into (d x 1) shape vector
@@ -53,8 +53,9 @@ class linucb_arm():
         # # print("Theta Shape", theta.shape)
         # # print("Context Shape", x_array.shape)
         # # print("A Shape", A.shape)
-        x_array = x_array.reshape([-1, 1])
-        p = _calc_UCB(self.alpha, x_array, theta, A)
+        x = x_array.reshape([-1, 1])
+        # p = _calc_UCB(self.alpha, x_array, theta, A)
+        p = np.dot(theta.T, x) + alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
         # print('p:',p)
         return p
 
@@ -84,9 +85,9 @@ class linucb_policy():
         self.b = np.zeros([d, 1])
 
     def calc_theta(self):
-        # A_inv = np.linalg.inv(self.A)
-        # self.theta = np.dot(A_inv, self.b)
-        self.theta = _calc_theta(self.A, self.b)
+        A_inv = np.linalg.inv(self.A)
+        self.theta = np.dot(A_inv, self.b)
+        # self.theta = _calc_theta(self.A, self.b)
         return self.theta
 
     def setup_arms(self, article_ids):
@@ -237,7 +238,7 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     linucb_policy_object.printBandits()
     return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object
 
-@jit(nopython=True)
+
 def makeContext(pool_articles, user_features, articles):
     context = {}
     for article in pool_articles:
@@ -265,7 +266,7 @@ def yahoo_experiment(filename, alpha):
     cumulative_rewards = 0
     aligned_ctr = []
     t = 1
-    max_ = 3000000
+    max_ = 1000000
     for line_data in tqdm(f, total=max_):
         tim, articleID, click, user_features, pool_articles = parseLine(line_data)
         # 1st column: Logged data arm.
