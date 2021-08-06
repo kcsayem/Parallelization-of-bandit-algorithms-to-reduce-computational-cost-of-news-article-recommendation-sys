@@ -45,7 +45,8 @@ class ThompsonSampling:
 
     def update(self, reward, context):
         self.f += context * reward
-        self.theta_hat = np.dot(inverse(self.B_inv,np.outer(context, context)), self.f)
+        self.B_inv = inverse(self.B_inv,np.outer(context, context))
+        self.theta_hat = np.dot(self.B_inv, self.f)
 
     def pull(self, context):
         theta_estimate = self.sample()
@@ -203,8 +204,8 @@ def yahoo_experiment(filename):
                 random_cumulative_rewards += click
                 random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
             t += 1
-            # if t == 2000000:
-            #     break
+            if t == 2000000:
+                break
             # ts.updateV(t)
         f.close()
         plt.plot(aligned_ctr, label=f"v = {v}")
