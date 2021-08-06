@@ -7,7 +7,7 @@ import ast, sys, random
 import math
 import pandas as pd
 from tqdm import tqdm
-
+from helper_functions import inverse
 NUM_TRIALS = 2000
 
 
@@ -24,14 +24,14 @@ def parseLine(line):
 
 
 class ThompsonSampling:
-    def __init__(self, contextDimension, R):
+    def __init__(self, contextDimension, R, v):
         self.d = contextDimension
-        self.B = np.identity(self.d)
-        v = R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        self.B_inv = np.linalg.inv(np.identity(self.d))
+        # v = R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.v_squared = v ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * np.linalg.inv(self.B))
+        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared *self.B_inv)
         self.bandits = []
         self.regrets = []
         self.trueMean = 0
@@ -40,13 +40,12 @@ class ThompsonSampling:
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * np.linalg.inv(self.B))
+        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared *self.B_inv)
         return self.theta_estimate
 
     def update(self, reward, context):
-        self.B += np.outer(context, context)
         self.f += context * reward
-        self.theta_hat = np.dot(np.linalg.inv(self.B), self.f)
+        self.theta_hat = np.dot(inverse(self.B_inv,np.outer(context, context)), self.f)
 
     def pull(self, context):
         theta_estimate = self.sample()
@@ -66,7 +65,7 @@ class ThompsonSampling:
             if b.index == max_:
                 b.update()
         estimated_reward = max_value
-        return estimated_reward, max_
+        return estimated_reward, max_, specific_bandits
 
     def getEstimate(self):
         return self.theta_estimate
@@ -167,41 +166,58 @@ def yahoo_experiment(filename):
                 109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
                 109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
                 109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
-    f = open(filename, "r")
-    ts = ThompsonSampling(306, 0.0001)
-    ts.setUpBandits(articles)
-    aligned_time_steps = 0
-    cumulative_rewards = 0
-    aligned_ctr = []
-    t = 1
-    for line_id, line_data in enumerate(tqdm(f)):
-        tim, articleID, click, user_features, pool_articles = parseLine(line_data)
-        # 1st column: Logged data arm.
-        # Integer data type
-        context = makeContext(pool_articles, user_features, articles)
-        # print(context)
-        # break
-        x, arm_index = ts.pull(context)
-        if arm_index == int(articleID):
-            # Use reward information for the chosen arm to update
-            ts.update(click, context[arm_index])
+    v_s = np.arange(0.01, 0.5, 0.1)
+    random_results = []
+    for v in v_s:
+        v = float("{:.2f}".format(v))
+        print("==================================================================================")
+        print(f"Trying v = {v}")
+        print("==================================================================================")
+        f = open(filename, "r")
+        ts = ThompsonSampling(306, 0.0001, v)
+        ts.setUpBandits(articles)
+        aligned_time_steps = 0
+        random_aligned_time_steps = 0
+        cumulative_rewards = 0
+        random_cumulative_rewards = 0
+        aligned_ctr = []
+        random_aligned_ctr = []
+        t = 1
+        for line_id, line_data in enumerate(tqdm(f)):
+            tim, articleID, click, user_features, pool_articles = parseLine(line_data)
+            context = makeContext(pool_articles, user_features, articles)
+            # print(context)
+            # break
+            x, arm_index, specific_bandits = ts.pull(context)
+            random_index = np.random.choice(specific_bandits).index
+            if arm_index == int(articleID):
+                # Use reward information for the chosen arm to update
+                ts.update(click, context[arm_index])
 
-            # For CTR calculation
-            aligned_time_steps += 1
-            cumulative_rewards += click
-            aligned_ctr.append(cumulative_rewards / aligned_time_steps)
-        t += 1
-        # if t == 1000000:
-        #     break
-        ts.updateV(t)
-    plt.plot(aligned_ctr, label=f"R = {0.0001}")
-    print("total reward earned:", cumulative_rewards)
-    ts.printBandits()
-
-    plt.ylabel("CTR ratio (For Thompson Sampling)")
+                # For CTR calculation
+                aligned_time_steps += 1
+                cumulative_rewards += click
+                aligned_ctr.append(cumulative_rewards / aligned_time_steps)
+            if v == 0.01 and random_index == int(articleID):
+                random_aligned_time_steps += 1
+                random_cumulative_rewards += click
+                random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
+            t += 1
+            # if t == 2000000:
+            #     break
+            # ts.updateV(t)
+        f.close()
+        plt.plot(aligned_ctr, label=f"v = {v}")
+        if v == 0.01:
+            plt.plot(random_aligned_ctr, label=f"Random CTR")
+            random_results = random_cumulative_rewards
+        print("total reward earned from Thompson:", cumulative_rewards)
+        ts.printBandits()
+    print("total reward earned from Random:", random_results)
+    plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
     plt.legend()
-    plt.show()
+    plt.savefig(f"figure_real_ts_random.png")
 
 
 def makeContext(pool_articles, user_features, articles):
