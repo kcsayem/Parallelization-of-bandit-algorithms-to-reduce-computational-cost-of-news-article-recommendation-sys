@@ -1,4 +1,5 @@
 import numpy as np
+import mmap
 
 def inverse(A_inv, B):
     '''
@@ -11,6 +12,14 @@ def inverse(A_inv, B):
     g = np.trace(temp)
     inverse =  A_inv - (np.matmul(A_inv,temp)) * (1 / (1 + g))
     return inverse
+
+def get_num_lines(file_path):
+    fp = open(file_path, 'r+')
+    buf = mmap.mmap(fp.fileno(), 0)
+    lines = 0
+    while buf.readline():
+        lines += 1
+    return lines
 
 if __name__ == "__main__":
     A = np.random.rand(3, 3)
