@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
+from helper_functions import inverse
 # from numba import jit
 
 # # Numba helper function for faster calculation
@@ -29,6 +30,8 @@ from tqdm import tqdm
 #     theta = np.dot(A_inv, b)
 #     return theta
 
+
+
 # Create class object for a single linear ucb   arm
 class linucb_arm():
 
@@ -40,9 +43,9 @@ class linucb_arm():
         self.alpha = alpha
         self.N = 0
 
-    def calc_UCB(self, x_array, theta, A):
+    def calc_UCB(self, x_array, theta, A_inv):
         # Find A inverse for ridge regression
-        A_inv = np.linalg.inv(A)
+        # A_inv = np.linalg.inv(A)
         # # print("A:", A)
         #
         # # Reshape covariates input into (d x 1) shape vector
@@ -79,14 +82,15 @@ class linucb_policy():
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
         self.A = np.identity(d)
+        self.A_inv = np.linalg.inv(self.A)
 
         # b: (d x 1) corresponding response vector.
         # Equals to D_a.T * c_a in ridge regression formulation
         self.b = np.zeros([d, 1])
 
     def calc_theta(self):
-        A_inv = np.linalg.inv(self.A)
-        self.theta = np.dot(A_inv, self.b)
+        # A_inv = np.linalg.inv(self.A)
+        self.theta = np.dot(self.A_inv, self.b)
         # self.theta = _calc_theta(self.A, self.b)
         return self.theta
 
@@ -99,7 +103,8 @@ class linucb_policy():
 
         # Update A which is (d * d) matrix.
         self.A += np.dot(x, x.T)
-
+        # update A_inv
+        self.A_inv = inverse(self.A_inv, np.dot(x, x.T))
         # Update b which is (d x 1) vector
         # reward is scalar
         self.b += reward * x
@@ -119,6 +124,8 @@ class linucb_policy():
             for bandit in self.linucb_arms:
                 if key == bandit.index:
                     specific_bandits.append(bandit)
+
+        # print(len(specific_bandits))
 
         # Initiate ucb to be 0
         highest_ucb = float('-inf')
@@ -154,7 +161,7 @@ class linucb_policy():
         for arm in specific_bandits:
             # # x = np.linalg.norm(context[arm.index])
             # print('x', context[arm.index])
-            cur_value = arm.calc_UCB(context[arm.index], theta, self.A)
+            cur_value = arm.calc_UCB(context[arm.index], theta, self.A_inv)
             if highest_ucb < cur_value:
                 # set new max ucb
                 highest_ucb = cur_value
@@ -175,7 +182,9 @@ class linucb_policy():
                 bandit.update()
         self.chosen_arm = chosen_arm
 
-        return chosen_arm
+        #random choosen_arm
+        random = np.random.choice(specific_bandits)
+        return chosen_arm, random.index
 
 
 def parseLine(line):
@@ -265,6 +274,9 @@ def yahoo_experiment(filename, alpha):
     aligned_time_steps = 0
     cumulative_rewards = 0
     aligned_ctr = []
+    random_aligned_time_steps = 0
+    random_cumulative_rewards = 0
+    random_aligned_ctr = []
     t = 1
     max_ = 1000000
     for line_data in tqdm(f, total=max_):
@@ -280,7 +292,7 @@ def yahoo_experiment(filename, alpha):
         # print(context)
 
         # break
-        arm_index = linucb_policy_object.select_arm(context)
+        arm_index, random_selection = linucb_policy_object.select_arm(context)
         if arm_index == int(articleID):
             # Use reward information for the chosen arm to update
             linucb_policy_object.reward_update(click, context[arm_index])
@@ -290,12 +302,19 @@ def yahoo_experiment(filename, alpha):
             cumulative_rewards += click
             aligned_ctr.append(cumulative_rewards / aligned_time_steps)
 
+        if random_selection == int(articleID):
+
+            # For CTR calculation
+            random_aligned_time_steps += 1
+            random_cumulative_rewards += click
+            random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
+
         t += 1
         if t == max_:
             break
 
     linucb_policy_object.printBandits()
-    return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object
+    return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object, random_aligned_ctr, random_cumulative_rewards
 
 
 if __name__ == "__main__":
@@ -306,10 +325,11 @@ if __name__ == "__main__":
     data_path = "data/data"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
-        aligned_time_steps, cum_rewards, aligned_ctr, policy = yahoo_experiment(data_path, alpha)
+        aligned_time_steps, cum_rewards, aligned_ctr, policy, random_aligned_ctr, random_cumulative_rewards = yahoo_experiment(data_path, alpha)
         print("Cumulative Reward: ", cum_rewards)
         plt.plot(aligned_ctr, label="alpha = " + str(alpha))
+    plt.plot(random_aligned_ctr, label="For random selecton, CumR=" + str(random_cumulative_rewards))
     plt.ylabel("CTR ratio (For Single Theta)")
-    plt.xlabel("Time(For projection )")
+    plt.xlabel("Time")
     plt.legend()
     plt.show()
