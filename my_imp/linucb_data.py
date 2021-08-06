@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
-from helper_functions import inverse
+from helper_functions import inverse, get_num_lines
 # from numba import jit
 
 # # Numba helper function for faster calculation
@@ -278,7 +278,7 @@ def yahoo_experiment(filename, alpha):
     random_cumulative_rewards = 0
     random_aligned_ctr = []
     t = 1
-    max_ = 1000000
+    max_ = get_num_lines(filename)
     for line_data in tqdm(f, total=max_):
         tim, articleID, click, user_features, pool_articles = parseLine(line_data)
         # 1st column: Logged data arm.
@@ -309,9 +309,9 @@ def yahoo_experiment(filename, alpha):
             random_cumulative_rewards += click
             random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
 
-        t += 1
-        if t == max_:
-            break
+        # t += 1
+        # if t == max_:
+        #     break
 
     linucb_policy_object.printBandits()
     return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object, random_aligned_ctr, random_cumulative_rewards
