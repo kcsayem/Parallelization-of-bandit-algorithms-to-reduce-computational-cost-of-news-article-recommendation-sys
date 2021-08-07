@@ -8,6 +8,8 @@ import math
 import pandas as pd
 from tqdm import tqdm
 from helper_functions import inverse
+import cProfile
+
 NUM_TRIALS = 2000
 
 
@@ -31,7 +33,7 @@ class ThompsonSampling:
         self.v_squared = v ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared *self.B_inv)
+        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * self.B_inv)
         self.bandits = []
         self.regrets = []
         self.trueMean = 0
@@ -40,12 +42,12 @@ class ThompsonSampling:
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared *self.B_inv)
+        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * self.B_inv)
         return self.theta_estimate
 
     def update(self, reward, context):
         self.f += context * reward
-        self.B_inv = inverse(self.B_inv,np.outer(context, context))
+        self.B_inv = inverse(self.B_inv, np.outer(context, context))
         self.theta_hat = np.dot(self.B_inv, self.f)
 
     def pull(self, context):
@@ -204,8 +206,8 @@ def yahoo_experiment(filename):
                 random_cumulative_rewards += click
                 random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
             t += 1
-            if t == 2000000:
-                break
+            # if t == 2:
+            #     break
             # ts.updateV(t)
         f.close()
         plt.plot(aligned_ctr, label=f"v = {v}")
@@ -214,6 +216,7 @@ def yahoo_experiment(filename):
             random_results = random_cumulative_rewards
         print("total reward earned from Thompson:", cumulative_rewards)
         ts.printBandits()
+
     print("total reward earned from Random:", random_results)
     plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
@@ -233,6 +236,9 @@ def makeContext(pool_articles, user_features, articles):
             context[int(article[0])] = all_zeros
     return context
 
+
+# def profile_run():
+#     yahoo_experiment("data/data")
 
 def num_articles(filename):
     f = open(filename, "r")
