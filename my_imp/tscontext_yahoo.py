@@ -7,7 +7,9 @@ import ast, sys, random
 import math
 import pandas as pd
 from tqdm import tqdm
-from helper_functions import inverse
+from helper_functions import inverse, get_num_lines
+from scipy.sparse.linalg import cg
+# from numpy.random import multivariate_normal
 import cProfile
 
 NUM_TRIALS = 2000
@@ -43,6 +45,7 @@ class ThompsonSampling:
 
     def sample(self):
         self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * self.B_inv)
+        # self.theta_estimate = multivariate_normal(mean=self.theta_hat, cov=(self.v_squared * self.B_inv))
         return self.theta_estimate
 
     def update(self, reward, context):
@@ -186,7 +189,8 @@ def yahoo_experiment(filename):
         aligned_ctr = []
         random_aligned_ctr = []
         t = 1
-        for line_id, line_data in enumerate(tqdm(f)):
+        max_ = get_num_lines(filename)
+        for line_data in tqdm(f, total=max_):
             tim, articleID, click, user_features, pool_articles = parseLine(line_data)
             context = makeContext(pool_articles, user_features, articles)
             # print(context)
