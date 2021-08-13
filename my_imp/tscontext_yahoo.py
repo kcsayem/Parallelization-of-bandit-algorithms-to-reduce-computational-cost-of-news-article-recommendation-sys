@@ -3,7 +3,9 @@ from builtins import range
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import beta, multivariate_normal
-import ast, sys, random
+import ast
+import sys
+import random
 import math
 import pandas as pd
 from tqdm import tqdm
@@ -11,6 +13,7 @@ from helper_functions import inverse, get_num_lines
 from scipy.sparse.linalg import cg
 # from numpy.random import multivariate_normal
 import cProfile
+from numpy.random import default_rng
 
 NUM_TRIALS = 2000
 
@@ -20,22 +23,26 @@ def parseLine(line):
 
     tim, articleID, click = line[0].strip().split(" ")
     tim, articleID, click = int(tim), int(articleID), int(click)
-    user_features = np.array([float(x.strip().split(':')[1]) for x in line[1].strip().split(' ')[1:]])
+    user_features = np.array([float(x.strip().split(':')[1])
+                             for x in line[1].strip().split(' ')[1:]])
 
     pool_articles = [l.strip().split(" ") for l in line[2:]]
-    pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
+    pool_articles = np.array(
+        [[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
     return tim, articleID, click, user_features, pool_articles
 
 
 class ThompsonSampling:
-    def __init__(self, contextDimension, R, v):
+    def __init__(self, contextDimension, R, c):
         self.d = contextDimension
         self.B_inv = np.linalg.inv(np.identity(self.d))
-        # v = R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        v = c * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.v_squared = v ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * self.B_inv)
+        rng = default_rng()
+        self.theta_estimate = rng.multivariate_normal(
+            self.theta_hat, self.v_squared * self.B_inv)
         self.bandits = []
         self.regrets = []
         self.trueMean = 0
@@ -44,7 +51,8 @@ class ThompsonSampling:
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
-        self.theta_estimate = np.random.multivariate_normal(self.theta_hat, self.v_squared * self.B_inv)
+        self.theta_estimate = np.random.multivariate_normal(
+            self.theta_hat, self.v_squared * self.B_inv)
         # self.theta_estimate = multivariate_normal(mean=self.theta_hat, cov=(self.v_squared * self.B_inv))
         return self.theta_estimate
 
@@ -144,9 +152,11 @@ def experiment():
             # Float data type
             data_reward = float(line_data.split()[1])
             covariate_string_list = line_data.split()[2:]
-            data_x_array = np.array([float(covariate_elem) for covariate_elem in covariate_string_list])
+            data_x_array = np.array([float(covariate_elem)
+                                    for covariate_elem in covariate_string_list])
             split_array = np.array_split(data_x_array, 10)
-            context = np.hstack([np.reshape(p, (dimension, 1)) for p in split_array])
+            context = np.hstack([np.reshape(p, (dimension, 1))
+                                for p in split_array])
             x, arm_index = ts.pull(context)
             if arm_index + 1 == data_arm:
                 # Use reward information for the chosen arm to update
@@ -191,7 +201,8 @@ def yahoo_experiment(filename):
         t = 1
         max_ = get_num_lines(filename)
         for line_data in tqdm(f, total=max_):
-            tim, articleID, click, user_features, pool_articles = parseLine(line_data)
+            tim, articleID, click, user_features, pool_articles = parseLine(
+                line_data)
             context = makeContext(pool_articles, user_features, articles)
             # print(context)
             # break
@@ -208,7 +219,8 @@ def yahoo_experiment(filename):
             if v == 0.01 and random_index == int(articleID):
                 random_aligned_time_steps += 1
                 random_cumulative_rewards += click
-                random_aligned_ctr.append(random_cumulative_rewards / random_aligned_time_steps)
+                random_aligned_ctr.append(
+                    random_cumulative_rewards / random_aligned_time_steps)
             t += 1
             # if t == 2:
             #     break
@@ -248,7 +260,8 @@ def num_articles(filename):
     f = open(filename, "r")
     articles = []
     for line_data in tqdm(f):
-        tim, articleID, click, user_features, pool_articles = parseLine(line_data)
+        tim, articleID, click, user_features, pool_articles = parseLine(
+            line_data)
         for article in pool_articles:
             if article[0] not in articles:
                 articles.append(article[0])
