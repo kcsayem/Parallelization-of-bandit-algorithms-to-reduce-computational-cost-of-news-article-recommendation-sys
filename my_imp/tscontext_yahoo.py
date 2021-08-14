@@ -17,6 +17,7 @@ from numpy.random import default_rng
 
 NUM_TRIALS = 2000
 
+rng = default_rng()
 
 def parseLine(line):
     line = line.split("|")
@@ -37,12 +38,13 @@ class ThompsonSampling:
         self.d = contextDimension
         self.B_inv = np.linalg.inv(np.identity(self.d))
         v = c * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        self.R = R
+        self.c = c
         self.v_squared = v ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
-        rng = default_rng()
         self.theta_estimate = rng.multivariate_normal(
-            self.theta_hat, self.v_squared * self.B_inv)
+            self.theta_hat, self.v_squared * self.B_inv,method='cholesky')
         self.bandits = []
         self.regrets = []
         self.trueMean = 0
@@ -51,8 +53,8 @@ class ThompsonSampling:
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
-        self.theta_estimate = np.random.multivariate_normal(
-            self.theta_hat, self.v_squared * self.B_inv)
+        self.theta_estimate = rng.multivariate_normal(
+            self.theta_hat, self.v_squared * self.B_inv,method='cholesky')
         # self.theta_estimate = multivariate_normal(mean=self.theta_hat, cov=(self.v_squared * self.B_inv))
         return self.theta_estimate
 
@@ -94,7 +96,7 @@ class ThompsonSampling:
         return self.regrets
 
     def updateV(self, t):
-        v = 0.001 * math.sqrt(24 * self.d / 0.05 * math.log(t / 0.1))
+        v = self.c * self.R * math.sqrt(24 * self.d / 0.05 * math.log(t / 0.05))
         self.v_squared = v ** 2
 
     def plot_regret(self, figsize=[12, 6]):
@@ -187,7 +189,7 @@ def yahoo_experiment(filename):
     for v in v_s:
         v = float("{:.2f}".format(v))
         print("==================================================================================")
-        print(f"Trying v = {v}")
+        print(f"Trying c = {v}")
         print("==================================================================================")
         f = open(filename, "r")
         ts = ThompsonSampling(306, 0.0001, v)
@@ -224,9 +226,9 @@ def yahoo_experiment(filename):
             t += 1
             # if t == 2:
             #     break
-            # ts.updateV(t)
+            ts.updateV(t)
         f.close()
-        plt.plot(aligned_ctr, label=f"v = {v}")
+        plt.plot(aligned_ctr, label=f"c = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
