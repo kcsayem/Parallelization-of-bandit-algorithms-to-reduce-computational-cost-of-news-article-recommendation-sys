@@ -9,7 +9,7 @@ import random
 import math
 import pandas as pd
 from tqdm import tqdm
-from helper_functions import inverse, get_num_lines
+from helper_functions import *
 from scipy.sparse.linalg import cg
 # from numpy.random import multivariate_normal
 import cProfile
@@ -18,20 +18,6 @@ from numpy.random import default_rng
 NUM_TRIALS = 2000
 
 rng = default_rng()
-
-def parseLine(line):
-    line = line.split("|")
-
-    tim, articleID, click = line[0].strip().split(" ")
-    tim, articleID, click = int(tim), int(articleID), int(click)
-    user_features = np.array([float(x.strip().split(':')[1])
-                             for x in line[1].strip().split(' ')[1:]])
-
-    pool_articles = [l.strip().split(" ") for l in line[2:]]
-    pool_articles = np.array(
-        [[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
-    return tim, articleID, click, user_features, pool_articles
-
 
 class ThompsonSampling:
     def __init__(self, contextDimension, R, c):
@@ -254,22 +240,9 @@ def makeContext(pool_articles, user_features, articles):
             context[int(article[0])] = all_zeros
     return context
 
-
-# def profile_run():
-#     yahoo_experiment("data/data")
-
-def num_articles(filename):
-    f = open(filename, "r")
-    articles = []
-    for line_data in tqdm(f):
-        tim, articleID, click, user_features, pool_articles = parseLine(
-            line_data)
-        for article in pool_articles:
-            if article[0] not in articles:
-                articles.append(article[0])
-    return articles
-
-
 if __name__ == "__main__":
     # np.set_printoptions(suppress=True)
-    yahoo_experiment("data/data")
+    # yahoo_experiment("data/data")
+    articles = num_articles("data/R6A")
+    print(articles)
+    print(len(articles))
