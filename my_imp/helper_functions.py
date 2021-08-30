@@ -86,12 +86,30 @@ def get_all_articles():
                 109780, 109781, 109782, 109783, 109730, 109784, 109785]
     return articles
 
+def get_near_psd(A):
+    C = (A + A.T)/2
+    eigval, eigvec = np.linalg.eig(C)
+    eigval[eigval < 0] = 0
+
+    return eigvec.dot(np.diag(eigval)).dot(eigvec.T)
+
+
+def is_positive_definate(A):
+    if np.array_equal(A, A.T):
+        try:
+            np.linalg.cholesky(A)
+            return True
+        except np.linalg.LinAlgError:
+            return False
+    else:
+        return False
+
+
+
+
 
 if __name__ == "__main__":
-    A = np.random.rand(3, 3)
-    A_inv = np.linalg.inv(A)
-    B = np.random.rand(3, 3)
-    print(A)
-    print(B)
-    print(np.linalg.inv(A + B))
-    print(inverse(A_inv, B))
+    A = np.random.rand(1000, 1000)
+    A = get_near_psd(A)
+    print(is_positive_definate(A))
+
