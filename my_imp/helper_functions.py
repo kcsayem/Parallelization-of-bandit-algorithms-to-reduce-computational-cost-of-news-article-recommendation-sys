@@ -107,6 +107,17 @@ def is_positive_definate(A):
     else:
         return False
 
+def makeContext(pool_articles, user_features, articles):
+    context = {}
+    for article in pool_articles:
+        if len(article) == 7 and len(user_features) == 6:
+            all_zeros = np.zeros(1632)
+            for i in range(len(articles)):
+                if articles[i] == int(article[0]):
+                    all_zeros[i * 6:i * 6 + 6] = user_features
+            all_zeros[1626:] = article[1:]
+            context[int(article[0])] = all_zeros
+    return context
 
 
 
@@ -115,4 +126,5 @@ if __name__ == "__main__":
     A = np.random.rand(1000, 1000)
     A = get_near_psd(A)
     print(is_positive_definate(A))
+
 
