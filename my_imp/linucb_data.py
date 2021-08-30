@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
-from helper_functions import inverse, get_num_lines
+from helper_functions import inverse, get_num_lines, get_all_articles, makeContext, parseLine
 # from numba import jit
 
 # # Numba helper function for faster calculation
@@ -135,32 +135,7 @@ class linucb_policy():
         candidate_arms = []
         theta = self.calc_theta()
 
-        # for arm_index in range(self.K_arms):
-        #     # Calculating projection of user on the arm
-        #     user_context = x_array
-        #     arm_context = self.arm_context[arm_index]
-        #     projection = self.calculate_projection(user_context, arm_context)
-        #
-        #     # Calculate ucb based on each arm using current covariates at time t
-        #
-        #     arm_ucb = self.linucb_arms[arm_index].calc_UCB(projection, theta,
-        #                                                    self.A)
-        #     # If current arm is highest than current highest_ucb
-        #     if arm_ucb > highest_ucb:
-        #         # Set new max ucb
-        #         highest_ucb = arm_ucb
-        #
-        #         # Reset candidate_arms list with new entry based on current arm
-        #         candidate_arms = [arm_index]
-        #
-        #     # If there is a tie, append to candidate_arms
-        #     if arm_ucb == highest_ucb:
-        #         if arm_index not in candidate_arms:
-        #             candidate_arms.append(arm_index)
-
         for arm in specific_bandits:
-            # # x = np.linalg.norm(context[arm.index])
-            # print('x', context[arm.index])
             cur_value = arm.calc_UCB(context[arm.index], theta, self.A_inv)
             if highest_ucb < cur_value:
                 # set new max ucb
@@ -185,18 +160,6 @@ class linucb_policy():
         #random choosen_arm
         random = np.random.choice(specific_bandits)
         return chosen_arm, random.index
-
-
-def parseLine(line):
-    line = line.split("|")
-
-    tim, articleID, click = line[0].strip().split(" ")
-    tim, articleID, click = int(tim), int(articleID), int(click)
-    user_features = np.array([float(x.strip().split(':')[1]) for x in line[1].strip().split(' ')[1:]])
-
-    pool_articles = [l.strip().split(" ") for l in line[2:]]
-    pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
-    return tim, articleID, click, user_features, pool_articles
 
 
 def ctr_simulator(K_arms, d, alpha, data_path):
@@ -248,27 +211,15 @@ def ctr_simulator(K_arms, d, alpha, data_path):
     return aligned_time_steps, cumulative_rewards, aligned_ctr, linucb_policy_object
 
 
-def makeContext(pool_articles, user_features, articles):
-    context = {}
-    for article in pool_articles:
-        if len(article) == 7 and len(user_features) == 6:
-            all_zeros = np.zeros(306)
-            for i in range(len(articles)):
-                if articles[i] == int(article[0]):
-                    all_zeros[i * 6:i * 6 + 6] = user_features
-            all_zeros[300:] = article[1:]
-            context[int(article[0])] = all_zeros
-    return context
-
-
 def yahoo_experiment(filename, alpha):
-    articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
-                109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
-                109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
-                109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
+    # articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
+    #             109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
+    #             109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
+    #             109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
+    articles = get_all_articles()
     f = open(filename, "r")
     # Initiate policy
-    linucb_policy_object = linucb_policy(K_arms=50, d=306, alpha=alpha)
+    linucb_policy_object = linucb_policy(K_arms=271, d=1632, alpha=alpha)
     # setup arms
     linucb_policy_object.setup_arms(articles)
     aligned_time_steps = 0
@@ -322,7 +273,7 @@ if __name__ == "__main__":
     # alpha_inputs = ast.literal_eval(argv[1])
     # alpha_inputs = [0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
     alpha_inputs = [0.1]
-    data_path = "data/data"
+    data_path = "data/R6A/data_2"
     for alpha in alpha_inputs:
         print(f"Trying with alpha = {alpha}")
         aligned_time_steps, cum_rewards, aligned_ctr, policy, random_aligned_ctr, random_cumulative_rewards = yahoo_experiment(data_path, alpha)
