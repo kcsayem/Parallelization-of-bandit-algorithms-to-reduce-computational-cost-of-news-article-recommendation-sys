@@ -95,7 +95,10 @@ def get_near_psd(A):
 
 
 def is_positive_definate(A):
-    if np.array_equal(A, A.T):
+    '''
+    if the matrix has a choleskey decomposition solution then it will be positive definite.
+    '''
+    if np.array_equal(A, A.T): # checking if the matrix is symmetric
         try:
             np.linalg.cholesky(A)
             return True
