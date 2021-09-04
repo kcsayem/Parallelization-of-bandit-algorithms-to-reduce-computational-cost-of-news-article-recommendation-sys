@@ -41,8 +41,8 @@ class ThompsonSampling:
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
-        self.theta_estimate = rng.multivariate_normal(
-            self.theta_hat, self.v_squared * self.B_inv, method='cholesky')
+        self.theta_estimate = random_sampling(
+            self.theta_hat, self.v_squared * self.B_inv, self.d,1)
         return self.theta_estimate
 
     def update(self, reward, context):
@@ -57,6 +57,7 @@ class ThompsonSampling:
             for bandit in self.bandits:
                 if key == bandit.index:
                     specific_bandits.append(bandit)
+                    break
         max_ = -1
         max_value = float('-inf')
         for b in specific_bandits:
@@ -67,6 +68,7 @@ class ThompsonSampling:
         for b in self.bandits:
             if b.index == max_:
                 b.update()
+                break
         estimated_reward = max_value
         return estimated_reward, max_, specific_bandits
 
@@ -161,6 +163,7 @@ def makeContext(pool_articles, user_features, articles):
 def experiment(folder):
     articles = get_all_articles()
     v_s = np.arange(0.01, 0.5, 0.1)
+    v_s = v_s[:1]
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))

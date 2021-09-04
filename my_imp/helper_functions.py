@@ -2,8 +2,10 @@ import numpy as np
 import mmap
 import os
 from tqdm import tqdm
+import numba as nb
+from numba import cuda, float32
 
-
+@nb.njit(fastmath=True,parallel=True)
 def inverse(A_inv, B):
     '''
     reference: https://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices
@@ -11,9 +13,9 @@ def inverse(A_inv, B):
     :param B: dot product of context vector
     :return: updated A_inv
     '''
-    temp = np.matmul(B, A_inv)
+    temp = np.dot(B, A_inv)
     g = np.trace(temp)
-    inverse = A_inv - (np.matmul(A_inv, temp)) * (1 / (1 + g))
+    inverse = A_inv - (np.dot(A_inv, temp)) * (1 / (1 + g))
     return inverse
 
 
@@ -119,12 +121,13 @@ def makeContext(pool_articles, user_features, articles):
             context[int(article[0])] = all_zeros
     return context
 
-
-
+@nb.njit(fastmath=True,parallel=True)
+def random_sampling(mean,cov,d,n):
+    L = np.linalg.cholesky(cov)
+    u = np.random.normal(loc=0, scale=1, size=d * n).reshape(d, n)
+    new_mean = mean + np.dot(L,u).flatten()
+    return new_mean
 
 if __name__ == "__main__":
-    A = np.random.rand(1000, 1000)
-    A = get_near_psd(A)
-    print(is_positive_definate(A))
-
+    print()
 
