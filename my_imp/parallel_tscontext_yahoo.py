@@ -155,6 +155,7 @@ def makeContext(pool_articles, user_features, articles):
             for i in range(len(articles)):
                 if articles[i] == int(article[0]):
                     all_zeros[i * 6:i * 6 + 6] = user_features
+                    break
             all_zeros[len(articles) * 6:] = article[1:]
             context[int(article[0])] = all_zeros
     return context
