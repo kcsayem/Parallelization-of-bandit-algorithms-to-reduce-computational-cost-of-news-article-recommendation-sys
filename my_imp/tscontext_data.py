@@ -27,7 +27,7 @@ class ThompsonSampling:
     def __init__(self, contextDimension, R):
         self.d = contextDimension
         self.B = np.identity(self.d)
-        v = R * math.sqrt(24 * self.d / 0.05 * math.log(1 / np.random.random(1)))
+        v = R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.v_squared = v ** 2
         self.f = np.zeros((self.d, 1))
         self.theta_hat = np.zeros(self.d)
@@ -168,7 +168,7 @@ def yahoo_experiment(filename):
                 109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
                 109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
     f = open(filename, "r")
-    ts = ThompsonSampling(12, 0.001)
+    ts = ThompsonSampling(12, 0.0001)
     ts.setUpBandits(articles)
     aligned_time_steps = 0
     cumulative_rewards = 0
@@ -197,7 +197,7 @@ def yahoo_experiment(filename):
         # if t == 1000000:
         #     break
         ts.updateV(t)
-    plt.plot(aligned_ctr,label=f"R = {0.001}")
+    plt.plot(aligned_ctr,label=f"R = {0.0001}")
     print("total reward earned:", cumulative_rewards)
     ts.printBandits()
 

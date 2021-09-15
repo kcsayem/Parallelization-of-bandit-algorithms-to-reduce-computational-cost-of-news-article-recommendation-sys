@@ -4,8 +4,10 @@ import os
 from tqdm import tqdm
 import numba as nb
 from numba import cuda, float32
+from bisect import bisect_left
 
-@nb.njit(fastmath=True,parallel=True)
+
+@nb.njit(fastmath=True, parallel=True)
 def inverse(A_inv, B):
     '''
     reference: https://math.stackexchange.com/questions/17776/inverse-of-the-sum-of-matrices
@@ -61,6 +63,7 @@ def num_articles(folder):
 
 
 def get_all_articles():
+    # All days
     articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506,
                 109510, 109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522,
                 109523, 109524, 109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531,
@@ -86,10 +89,20 @@ def get_all_articles():
                 109740, 109767, 109731
         , 109769, 109770, 109771, 109772, 109765, 109773, 109774, 109775, 109776, 109777, 109778, 109779,
                 109780, 109781, 109782, 109783, 109730, 109784, 109785]
+
+    # First two days
+    # articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
+    #             109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
+    #             109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
+    #             109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552, 109553, 109551,
+    #             109554, 109555, 109518, 109556, 109476, 109557, 109558, 109541, 109559, 109560, 109561, 109562, 109563,
+    #             109564, 109565, 109566, 109567, 109568, 109569, 109570, 109571]
+    articles = sorted(articles)
     return articles
 
+
 def get_near_psd(A):
-    C = (A + A.T)/2
+    C = (A + A.T) / 2
     eigval, eigvec = np.linalg.eig(C)
     eigval[eigval < 0] = 0
 
@@ -100,7 +113,7 @@ def is_positive_definate(A):
     '''
     if the matrix has a choleskey decomposition solution then it will be positive definite.
     '''
-    if np.array_equal(A, A.T): # checking if the matrix is symmetric
+    if np.array_equal(A, A.T):  # checking if the matrix is symmetric
         try:
             np.linalg.cholesky(A)
             return True
@@ -109,25 +122,37 @@ def is_positive_definate(A):
     else:
         return False
 
+
 def makeContext(pool_articles, user_features, articles):
     context = {}
     for article in pool_articles:
         if len(article) == 7 and len(user_features) == 6:
-            all_zeros = np.zeros(1632)
+            all_zeros = np.zeros(len(articles) * 6 + 6)
             for i in range(len(articles)):
                 if articles[i] == int(article[0]):
                     all_zeros[i * 6:i * 6 + 6] = user_features
-            all_zeros[1626:] = article[1:]
+            all_zeros[len(articles) * 6:] = article[1:]
             context[int(article[0])] = all_zeros
     return context
 
-@nb.njit(fastmath=True,parallel=True)
-def random_sampling(mean,cov,d,n):
+
+@nb.njit(fastmath=True, parallel=True)
+def random_sampling(mean, cov, d, n):
     L = np.linalg.cholesky(cov)
-    u = np.random.normal(loc=0, scale=1, size=d * n).reshape(d, n)
-    new_mean = mean + np.dot(L,u).flatten()
+    u = np.random.normal(loc=0, scale=1, size=d * n)
+    new_mean = mean + np.dot(u, L).flatten()
     return new_mean
 
-if __name__ == "__main__":
-    print()
 
+def bin_search(a, x):
+    i = bisect_left(a, x)
+    if i != len(a) and a[i] == x:
+        return i
+    else:
+        return -1
+
+
+if __name__ == "__main__":
+    # print(num_articles("data/R6A_spec"))
+    numbers = random_sampling(np.array([0, 5]), np.array([[1.5, 2], [1.5, 2]]), 2, 1)
+    print(numbers)

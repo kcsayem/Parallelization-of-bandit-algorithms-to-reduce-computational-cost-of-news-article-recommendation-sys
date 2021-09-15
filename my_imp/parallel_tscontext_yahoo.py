@@ -42,7 +42,7 @@ class ThompsonSampling:
 
     def sample(self):
         self.theta_estimate = random_sampling(
-            self.theta_hat, self.v_squared * self.B_inv, self.d,1)
+            self.theta_hat, self.v_squared * self.B_inv, self.d, 1)
         return self.theta_estimate
 
     def update(self, reward, context):
@@ -130,7 +130,6 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         if arm_index == int(articleID):
             # Use reward information for the chosen arm to update
             ts.update(click, context[arm_index])
-
             # For CTR calculation
             aligned_time_steps += 1
             cumulative_rewards += click
@@ -145,6 +144,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         #     break
         ts.updateV(t)
     f.close()
+    return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
 
 def makeContext(pool_articles, user_features, articles):
@@ -183,8 +183,9 @@ def experiment(folder):
         for root, dirs, files in os.walk(folder):
             for filename in files:
                 path = os.path.join(root, filename)
-                yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                                 random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t)
+                ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
+                    path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
+                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t)
         plt.plot(aligned_ctr, label=f"c = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
@@ -200,6 +201,7 @@ def experiment(folder):
 
 if __name__ == "__main__":
     start = datetime.now()
+    np.random.seed(42)
     experiment("data/R6A")
     end = datetime.now()
     print(f"Duration: {end - start}")
