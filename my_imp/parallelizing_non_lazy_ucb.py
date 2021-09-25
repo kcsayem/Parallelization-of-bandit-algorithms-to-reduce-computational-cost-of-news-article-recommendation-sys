@@ -34,7 +34,7 @@ class linucb_arm():
         # # print("A Shape", A.shape)
         x = x_array.reshape([-1, 1])
         # p = _calc_UCB(self.alpha, x_array, theta, A)
-        p = np.dot(theta.T, x) + alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
+        p = np.dot(theta.T, x) + self.alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
         # print('p:',p)
         return p
 
