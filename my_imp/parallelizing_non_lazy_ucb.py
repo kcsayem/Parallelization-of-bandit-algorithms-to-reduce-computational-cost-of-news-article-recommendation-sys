@@ -174,7 +174,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         # break
         arm_indexes = []
         for c in range(p):
-            x, arm_index, specific_bandits = ts.select_arm(contexts[c])
+            arm_index, specific_bandits = ts.select_arm(contexts[c])
             arm_indexes.append(arm_index)
         for r in range(p):
             #random_index = np.random.choice(specific_bandits).index
