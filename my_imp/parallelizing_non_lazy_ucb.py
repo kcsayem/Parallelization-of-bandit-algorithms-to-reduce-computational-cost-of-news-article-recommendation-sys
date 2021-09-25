@@ -89,7 +89,7 @@ class linucb_policy():
         for i in range(len(contexts)):
             rc_sum+=contexts[i][list(contexts[i].keys())[0]]*rewards[i]
             bc_sum+=np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
-        self.b += rc_sum
+        self.b += rc_sum.reshape([-1,1])
         self.A = bc_sum
         self.A_inv = inverse(self.A_inv, bc_sum)
         self.calc_theta()
@@ -154,8 +154,8 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
     max_ = get_num_lines(path)
     # for line_data in tqdm(f, total=max_):
     for iteration in tqdm(range(math.ceil(max_/p))):
-        # if iteration==900:
-        #     break
+        if iteration==900:
+            break
         lines = []
         for i in range(p):
             lines.append(f.readline())
@@ -187,7 +187,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
-        linucb_policy.update_batch(clicks,contexts)
+        ts.reward_update_batch(clicks,contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
         #     random_cumulative_rewards += click
@@ -235,7 +235,7 @@ def experiment(folder):
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
-                print('pass 3')
+                # print('pass 3')
         plt.plot(aligned_ctr, label=f"alpha = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
