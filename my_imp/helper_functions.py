@@ -123,6 +123,19 @@ def is_positive_definate(A):
             return False
     else:
         return False
+@nb.njit(fastmath=True, parallel=True)
+def ispositivesemidifinate(A):
+    '''
+    if trace of a matrics is zero or more then it is positive semidefinate.
+    '''
+    if np.array_equal(A, A.T):
+        if np.trace(A) >= 0:
+            return True
+        else:
+            return False
+    else:
+        return False
+
 
 def check_readline(file):
     import math
