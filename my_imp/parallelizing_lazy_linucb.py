@@ -109,7 +109,9 @@ class linucb_policy():
     def doubling_round(self):
         if ispositivesemidifinate(self.A - 2 * self.A_previous):
             self.doubling_rounds += 1
-        self.A_previous = self.A
+            self.A_previous = self.A
+        else:
+            self.A_previous = self.A
     
 
     def select_arm(self, context):

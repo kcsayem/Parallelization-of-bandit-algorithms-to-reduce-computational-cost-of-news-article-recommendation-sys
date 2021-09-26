@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
-from helper_functions import inverse, get_num_lines, get_all_articles, makeContext, parseLine
+from helper_functions import *
 import math
 
 # Create class object for a single linear ucb   arm
@@ -52,12 +52,14 @@ class linucb_policy():
         self.chosen_arm = -1
         self.d = d
         self.theta = None
+        self.doubling_rounds = 0
     
         
 
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
         self.A = np.identity(d) * lmd 
+        self.A_previous = self.A
         self.A_inv = np.linalg.inv(self.A)
 
         # b: (d x 1) corresponding response vector.
@@ -97,6 +99,14 @@ class linucb_policy():
 
     def printBandits(self):
         print("num times selected each bandit:", [b.N for b in self.linucb_arms])
+        print('Doubling Round', self.doubling_rounds)
+    
+    def doubling_round(self):
+        if ispositivesemidifinate(self.A - 2 * self.A_previous):
+            self.doubling_rounds += 1
+            self.A_previous = self.A
+        else:
+            self.A_previous = self.A
 
     def calculate_projection(self, u, v):
         v_norm = np.sqrt(sum(v ** 2))
@@ -173,10 +183,10 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         # print(context)
         # break
         arm_indexes = []
-        for c in range(p):
+        for c in range(len(contexts)):
             arm_index, specific_bandits = ts.select_arm(contexts[c])
             arm_indexes.append(arm_index)
-        for r in range(p):
+        for r in range(len(contexts)):
             #random_index = np.random.choice(specific_bandits).index
             if arm_indexes[r] == article_ids[r]:
                 # Use reward information for the chosen arm to update
@@ -188,6 +198,9 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
             else:
                 clicks[r] = 0
         ts.reward_update_batch(clicks,contexts)
+        # Doubling round Check
+        ts.doubling_round()
+
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
         #     random_cumulative_rewards += click

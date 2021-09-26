@@ -7,6 +7,11 @@ from tqdm import tqdm
 import numba as nb
 from numba import cuda, float32
 from bisect import bisect_left
+import sys
+import warnings
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 
 @nb.njit(fastmath=True, parallel=True)
