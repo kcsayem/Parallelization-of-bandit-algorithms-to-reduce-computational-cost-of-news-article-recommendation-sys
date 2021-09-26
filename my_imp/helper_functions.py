@@ -150,7 +150,8 @@ def makeContext(pool_articles, user_features, articles):
 
 
 @nb.njit(fastmath=True, parallel=True)
-def random_sampling(mean, cov, d, n):
+def random_sampling(mean, cov, d, n,seed):
+    np.random.seed(seed)
     L = np.linalg.cholesky(cov)
     u = np.random.normal(loc=0, scale=1, size=d * n)
     new_mean = mean + np.dot(u, L).flatten()

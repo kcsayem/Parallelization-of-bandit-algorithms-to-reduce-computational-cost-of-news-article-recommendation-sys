@@ -21,6 +21,7 @@ NUM_TRIALS = 2000
 
 rng = default_rng()
 
+SEED = 42
 
 class ThompsonSampling:
     def __init__(self, contextDimension, R, c):
@@ -43,7 +44,7 @@ class ThompsonSampling:
 
     def sample(self):
         self.theta_estimate = random_sampling(
-            self.theta_hat, self.v_squared * self.B_inv, self.d, 1)
+            self.theta_hat, self.v_squared * self.B_inv, self.d, 1,SEED)
         return self.theta_estimate
 
     def update_iteration(self, context):
@@ -147,11 +148,11 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         # print(context)
         # break
         arm_indexes = []
-        for c in range(p):
+        for c in range(len(contexts)):
             x, arm_index, specific_bandits = ts.pull(contexts[c])
             ts.update_iteration(contexts[c][arm_index])
             arm_indexes.append(arm_index)
-        for r in range(p):
+        for r in range(len(contexts)):
             #random_index = np.random.choice(specific_bandits).index
             if arm_indexes[r] == article_ids[r]:
                 # Use reward information for the chosen arm to update
@@ -214,7 +215,7 @@ def experiment(folder):
                 path = os.path.join(root, filename)
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,100)
+                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,50)
         plt.plot(aligned_ctr, label=f"c = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
@@ -225,12 +226,12 @@ def experiment(folder):
     plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"figure_real_ts_random.png")
+    plt.savefig(f"figure_real_ts_random_lazy.png")
 
 
 if __name__ == "__main__":
     start = datetime.now()
-    np.random.seed(42)
+    np.random.seed(SEED)
     experiment("data/R6A_spec")
     end = datetime.now()
     print(f"Duration: {end - start}")
