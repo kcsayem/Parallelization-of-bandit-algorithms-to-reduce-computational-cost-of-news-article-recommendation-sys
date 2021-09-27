@@ -164,8 +164,6 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
     max_ = get_num_lines(path)
     # for line_data in tqdm(f, total=max_):
     for iteration in tqdm(range(math.ceil(max_/p))):
-        if iteration==900:
-            break
         lines = []
         for i in range(p):
             lines.append(f.readline())
