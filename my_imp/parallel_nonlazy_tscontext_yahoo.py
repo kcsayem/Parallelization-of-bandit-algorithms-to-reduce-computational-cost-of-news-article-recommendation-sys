@@ -16,8 +16,7 @@ import cProfile
 from numpy.random import default_rng
 import os
 from datetime import datetime
-
-NUM_TRIALS = 2000
+import warnings
 
 rng = default_rng()
 SEED = 42
@@ -193,16 +192,16 @@ def makeContext(pool_articles, user_features, articles):
     return context
 
 
-def experiment(folder):
+def experiment(folder,p):
     articles = get_all_articles()
     v_s = np.arange(0.01, 0.5, 0.1)
     v_s = v_s[:1]
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))
-        print("==================================================================================")
-        print(f"Trying c = {v}")
-        print("==================================================================================")
+        print("================================================")
+        print(f"TRYING C = {v}")
+        print("================================================")
         ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v,0.2)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
@@ -217,7 +216,7 @@ def experiment(folder):
                 path = os.path.join(root, filename)
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,50)
+                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
         plt.plot(aligned_ctr, label=f"c = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
@@ -228,12 +227,14 @@ def experiment(folder):
     plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"figure_real_ts_random_nonlazy.png")
+    plt.savefig(f"figure_real_ts_random_nonlazy_{p}.png")
 
 
-if __name__ == "__main__":
-    start = datetime.now()
-    np.random.seed(SEED)
-    experiment("data/R6A_spec")
-    end = datetime.now()
-    print(f"Duration: {end - start}")
+# if __name__ == "__main__":
+#     warnings.filterwarnings('ignore')
+#     np.random.seed(SEED)
+#     for p in [25,50,100]:
+#         start = datetime.now()
+#         experiment("data/R6A_spec",p)
+#         end = datetime.now()
+#         print(f"Duration: {end - start}")

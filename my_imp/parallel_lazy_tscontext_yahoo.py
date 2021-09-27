@@ -16,12 +16,12 @@ import cProfile
 from numpy.random import default_rng
 import os
 from datetime import datetime
-
-NUM_TRIALS = 2000
+import warnings
 
 rng = default_rng()
 
 SEED = 42
+
 
 class ThompsonSampling:
     def __init__(self, contextDimension, R, c):
@@ -44,7 +44,7 @@ class ThompsonSampling:
 
     def sample(self):
         self.theta_estimate = random_sampling(
-            self.theta_hat, self.v_squared * self.B_inv, self.d, 1,SEED)
+            self.theta_hat, self.v_squared * self.B_inv, self.d, 1, SEED)
         return self.theta_estimate
 
     def update_iteration(self, context):
@@ -54,7 +54,7 @@ class ThompsonSampling:
     def update_batch(self, rewards, contexts):
         rc_sum = 0
         for i in range(len(contexts)):
-            rc_sum+=contexts[i][list(contexts[i].keys())[0]]*rewards[i]
+            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
         self.f += rc_sum
         self.theta_hat = np.dot(self.B_inv, self.f)
 
@@ -124,11 +124,11 @@ def plot(bandits, trial):
 
 
 def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p):
+                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p):
     f = open(path, "r")
     max_ = get_num_lines(path)
     # for line_data in tqdm(f, total=max_):
-    for iteration in tqdm(range(math.ceil(max_/p))):
+    for iteration in tqdm(range(math.ceil(max_ / p))):
         # if iteration==100:
         #     break
         lines = []
@@ -138,11 +138,11 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         contexts = []
         article_ids = []
         for line in lines:
-            if len(line)==0: continue
+            if len(line) == 0: continue
             tim, articleID, click, user_features, pool_articles = parseLine(
-            line)
+                line)
             context = makeContext(pool_articles, user_features, articles)
-            clicks = np.append(clicks,click)
+            clicks = np.append(clicks, click)
             contexts.append(context)
             article_ids.append(int(articleID))
         # print(context)
@@ -153,7 +153,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
             ts.update_iteration(contexts[c][arm_index])
             arm_indexes.append(arm_index)
         for r in range(len(contexts)):
-            #random_index = np.random.choice(specific_bandits).index
+            # random_index = np.random.choice(specific_bandits).index
             if arm_indexes[r] == article_ids[r]:
                 # Use reward information for the chosen arm to update
 
@@ -163,7 +163,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
-        ts.update_batch(clicks,contexts)
+        ts.update_batch(clicks, contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
         #     random_cumulative_rewards += click
@@ -191,16 +191,16 @@ def makeContext(pool_articles, user_features, articles):
     return context
 
 
-def experiment(folder):
+def experiment(folder, p):
     articles = get_all_articles()
     v_s = np.arange(0.01, 0.5, 0.1)
     v_s = v_s[:1]
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))
-        print("==================================================================================")
-        print(f"Trying c = {v}")
-        print("==================================================================================")
+        print("================================================")
+        print(f"TRYING C = {v}")
+        print("================================================")
         ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
@@ -215,8 +215,8 @@ def experiment(folder):
                 path = os.path.join(root, filename)
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,50)
-        plt.plot(aligned_ctr, label=f"c = {v}")
+                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p)
+        plt.plot(aligned_ctr, label=f"C = {v}")
         if v == 0.01:
             plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
@@ -226,12 +226,14 @@ def experiment(folder):
     plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"figure_real_ts_random_lazy.png")
+    plt.savefig(f"figure_real_ts_random_lazy_{p}.png")
 
 
-if __name__ == "__main__":
-    start = datetime.now()
-    np.random.seed(SEED)
-    experiment("data/R6A_spec")
-    end = datetime.now()
-    print(f"Duration: {end - start}")
+# if __name__ == "__main__":
+#     warnings.filterwarnings('ignore')
+#     np.random.seed(SEED)
+#     for p in [25, 50, 100]:
+#         start = datetime.now()
+#         experiment("data/R6A_spec", p)
+#         end = datetime.now()
+#         print(f"Duration: {end - start}")

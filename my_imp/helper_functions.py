@@ -104,6 +104,13 @@ def get_all_articles():
                 109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552, 109553, 109551,
                 109554, 109555, 109518, 109556, 109476, 109557, 109558, 109541, 109559, 109560, 109561, 109562, 109563,
                 109564, 109565, 109566, 109567, 109568, 109569, 109570, 109571]
+
+    # First day
+    articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
+                109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
+                109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
+                109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
+
     articles = sorted(articles)
     return articles
 
@@ -128,6 +135,8 @@ def is_positive_definate(A):
             return False
     else:
         return False
+
+
 @nb.njit(fastmath=True, parallel=True)
 def ispositivesemidifinate(A):
     '''
@@ -144,15 +153,16 @@ def ispositivesemidifinate(A):
 
 def check_readline(file):
     import math
-    f = open(file,"r")
+    f = open(file, "r")
     max_ = get_num_lines(file)
-    for i in tqdm(range(math.ceil(max_/5))):
+    for i in tqdm(range(math.ceil(max_ / 5))):
         lines = []
         for j in range(5):
-                lines.append(f.readline())
+            lines.append(f.readline())
         for line in lines:
-            if len(line)!=0:
+            if len(line) != 0:
                 print(line)
+
 
 def makeContext(pool_articles, user_features, articles):
     context = {}
@@ -168,7 +178,7 @@ def makeContext(pool_articles, user_features, articles):
 
 
 @nb.njit(fastmath=True, parallel=True)
-def random_sampling(mean, cov, d, n,seed):
+def random_sampling(mean, cov, d, n, seed):
     np.random.seed(seed)
     L = np.linalg.cholesky(cov)
     u = np.random.normal(loc=0, scale=1, size=d * n)
@@ -186,4 +196,4 @@ def bin_search(a, x):
 
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
-    check_readline("data/R6A.README")
+    print(num_articles("data/R6A_spec"))
