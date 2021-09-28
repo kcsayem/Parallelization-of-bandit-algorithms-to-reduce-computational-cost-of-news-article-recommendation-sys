@@ -217,9 +217,9 @@ def experiment(folder,p):
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
-        plt.plot(aligned_ctr, label=f"c = {v}")
+        plt.plot(aligned_ctr, label=f"P = {p}")
         if v == 0.01:
-            plt.plot(random_aligned_ctr, label=f"Random CTR")
+            # plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
         print("total reward earned from Thompson:", cumulative_rewards)
         ts.printBandits()
