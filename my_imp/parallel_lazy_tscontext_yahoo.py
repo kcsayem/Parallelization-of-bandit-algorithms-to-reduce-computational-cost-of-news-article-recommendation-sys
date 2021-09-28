@@ -28,7 +28,7 @@ class ThompsonSampling:
         self.d = contextDimension
         self.B = np.identity(self.d)
         self.B_inv = np.linalg.inv(self.B)
-        v = c * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        v = c  # R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.R = R
         self.c = c
         self.v_squared = v ** 2
@@ -127,7 +127,6 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                      random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p):
     f = open(path, "r")
     max_ = get_num_lines(path)
-    # for line_data in tqdm(f, total=max_):
     for iteration in tqdm(range(math.ceil(max_ / p))):
         # if iteration==100:
         #     break
@@ -145,8 +144,6 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
             clicks = np.append(clicks, click)
             contexts.append(context)
             article_ids.append(int(articleID))
-        # print(context)
-        # break
         arm_indexes = []
         for c in range(len(contexts)):
             x, arm_index, specific_bandits = ts.pull(contexts[c])
@@ -172,7 +169,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         t += 1
         # if t == 2:
         #     break
-        ts.updateV(t)
+    # ts.updateV(t)
     f.close()
     return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
@@ -227,7 +224,6 @@ def experiment(folder, p):
     plt.xlabel("Time")
     plt.legend()
     plt.savefig(f"figure_real_ts_random_lazy_{p}.png")
-
 
 # if __name__ == "__main__":
 #     warnings.filterwarnings('ignore')

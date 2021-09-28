@@ -21,12 +21,13 @@ import warnings
 rng = default_rng()
 SEED = 42
 
+
 class ThompsonSampling:
     def __init__(self, contextDimension, R, c, lmb):
         self.d = contextDimension
-        self.B = np.identity(self.d)*lmb
+        self.B = np.identity(self.d) * lmb
         self.B_inv = np.linalg.inv(self.B)
-        v = c * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        v = c  # * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.R = R
         self.c = c
         self.v_squared = v ** 2
@@ -42,7 +43,7 @@ class ThompsonSampling:
 
     def sample(self):
         self.theta_estimate = random_sampling(
-            self.theta_hat, self.v_squared * self.B_inv, self.d, 1,SEED)
+            self.theta_hat, self.v_squared * self.B_inv, self.d, 1, SEED)
         return self.theta_estimate
 
     def update_iteration(self, context):
@@ -53,11 +54,11 @@ class ThompsonSampling:
         rc_sum = 0
         bc_sum = 0
         for i in range(len(contexts)):
-            rc_sum+=contexts[i][list(contexts[i].keys())[0]]*rewards[i]
-            bc_sum+=np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
+            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
+            bc_sum += np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
         self.f += rc_sum
-        self.B+=bc_sum
-        self.B_inv = inverse(self.B_inv,bc_sum)
+        self.B += bc_sum
+        self.B_inv = inverse(self.B_inv, bc_sum)
         self.theta_hat = np.dot(self.B_inv, self.f)
 
     def pull(self, context):
@@ -126,11 +127,10 @@ def plot(bandits, trial):
 
 
 def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p):
+                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p):
     f = open(path, "r")
     max_ = get_num_lines(path)
-    # for line_data in tqdm(f, total=max_):
-    for iteration in tqdm(range(math.ceil(max_/p))):
+    for iteration in tqdm(range(math.ceil(max_ / p))):
         # if iteration==900:
         #     break
         lines = []
@@ -140,21 +140,19 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         contexts = []
         article_ids = []
         for line in lines:
-            if len(line)==0: continue
+            if len(line) == 0: continue
             tim, articleID, click, user_features, pool_articles = parseLine(
-            line)
+                line)
             context = makeContext(pool_articles, user_features, articles)
-            clicks = np.append(clicks,click)
+            clicks = np.append(clicks, click)
             contexts.append(context)
             article_ids.append(int(articleID))
-        # print(context)
-        # break
         arm_indexes = []
         for c in range(len(contexts)):
             x, arm_index, specific_bandits = ts.pull(contexts[c])
             arm_indexes.append(arm_index)
         for r in range(len(contexts)):
-            #random_index = np.random.choice(specific_bandits).index
+            # random_index = np.random.choice(specific_bandits).index
             if arm_indexes[r] == article_ids[r]:
                 # Use reward information for the chosen arm to update
 
@@ -164,7 +162,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
-        ts.update_batch(clicks,contexts)
+        ts.update_batch(clicks, contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
         #     random_cumulative_rewards += click
@@ -173,7 +171,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         t += 1
         # if t == 2:
         #     break
-        ts.updateV(t)
+    # ts.updateV(t)
     f.close()
     return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
@@ -192,7 +190,7 @@ def makeContext(pool_articles, user_features, articles):
     return context
 
 
-def experiment(folder,p):
+def experiment(folder, p):
     articles = get_all_articles()
     v_s = np.arange(0.01, 0.5, 0.1)
     v_s = v_s[:1]
@@ -202,7 +200,7 @@ def experiment(folder,p):
         print("================================================")
         print(f"TRYING C = {v}")
         print("================================================")
-        ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v,0.2)
+        ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v, 0.2)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
         random_aligned_time_steps = 0
@@ -216,7 +214,7 @@ def experiment(folder,p):
                 path = os.path.join(root, filename)
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
+                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p)
         plt.plot(aligned_ctr, label=f"P = {p}")
         if v == 0.01:
             # plt.plot(random_aligned_ctr, label=f"Random CTR")
@@ -228,7 +226,6 @@ def experiment(folder,p):
     plt.xlabel("Time")
     plt.legend()
     plt.savefig(f"figure_real_ts_random_nonlazy_{p}.png")
-
 
 # if __name__ == "__main__":
 #     warnings.filterwarnings('ignore')
