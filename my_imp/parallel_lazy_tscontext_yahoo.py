@@ -93,15 +93,6 @@ class ThompsonSampling:
         v = self.c * self.R * math.sqrt(24 * self.d / 0.05 * math.log(t / 0.05))
         self.v_squared = v ** 2
 
-    def plot_regret(self, figsize=[12, 6]):
-        fig, axes = plt.subplots(1, 2, figsize=figsize)
-        pd.Series(np.cumsum(self.regrets)).plot(ax=axes[0])
-        axes[0].set_title(f"Cummulative Regret for {NUM_TRIALS} iteration")
-        pd.Series(np.hstack(self.regrets).reshape(-1)).plot(ax=axes[1])
-        axes[1].set_title(f"Individual Regret for {NUM_TRIALS} iteration")
-        plt.suptitle(f"Regret for Thompson Sampling")
-        plt.show()
-
 
 class Bandit:
     def __init__(self, index):
@@ -111,16 +102,6 @@ class Bandit:
 
     def update(self):
         self.N += 1
-
-
-def plot(bandits, trial):
-    x = np.linspace(0, 1, 200)
-    for b in bandits:
-        y = beta.pdf(x, b.a, b.b)
-        plt.plot(x, y, label=f"real p: {b.p:.4f}, win rate = {b.a - 1}/{b.N}")
-    plt.title(f"Bandit distributions after {trial} trials")
-    plt.legend()
-    plt.show()
 
 
 def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
