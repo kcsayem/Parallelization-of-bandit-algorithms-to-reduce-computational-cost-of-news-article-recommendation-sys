@@ -1,12 +1,15 @@
 import os
 from datetime import datetime
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import sys
 import ast
 from tqdm import tqdm
 from helper_functions import *
 import math
+import datetime
+matplotlib.use('tkagg')
 
 # Create class object for a single linear ucb   arm
 class linucb_arm():
@@ -59,7 +62,7 @@ class linucb_policy():
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
         self.A = np.identity(d) * lmd 
-        self.A_previous = self.A
+        self.A_previous = np.array(self.A, copy=True)
         self.A_inv = np.linalg.inv(self.A)
 
         # b: (d x 1) corresponding response vector.
@@ -109,9 +112,9 @@ class linucb_policy():
     def doubling_round(self):
         if ispositivesemidifinate(self.A - 2 * self.A_previous):
             self.doubling_rounds += 1
-            self.A_previous = self.A
+            self.A_previous = np.array(self.A, copy=True)
         else:
-            self.A_previous = self.A
+            self.A_previous = np.array(self.A, copy=True)
     
 
     def select_arm(self, context):
@@ -214,53 +217,56 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
 
 
 
-def experiment(folder):
+def experiment(folder, p):
     articles = get_all_articles()
     # alphas = np.arange(0.01, 0.5, 0.1)
     alphas = [0.3]
     # v_s = alphas[:1]
     lmd = 0.2
-    p = 50
+    ps = p
     random_results = []
     for v in alphas:
-        v = float("{:.2f}".format(v))
-        print("==================================================================================")
-        print(f"Trying alpha = {v}, lambda = {lmd}, p = {p}")
-        print("==================================================================================")
-        ts = linucb_policy(len(articles), len(articles) * 6 + 6,v,lmd)
-        ts.setup_arms(articles)
-        aligned_time_steps = 0
-        random_aligned_time_steps = 0
-        cumulative_rewards = 0
-        random_cumulative_rewards = 0
-        aligned_ctr = []
-        random_aligned_ctr = []
-        t = 1
-        # print('pass')
-        for root, dirs, files in os.walk(folder):
-            # print('pass 1')
-            for filename in files:
-                # print('pass 2')
-                path = os.path.join(root, filename)
-                # print(path)
-                ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
-                    path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                    random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
-                # print('pass 3')
-        plt.plot(aligned_ctr, label=f"alpha = {v}")
-        if v == 0.01:
-            plt.plot(random_aligned_ctr, label=f"Random CTR")
-            random_results = random_cumulative_rewards
-        print("total reward earned from Linucb:", cumulative_rewards)
-        ts.printBandits()
+        for p in ps:
+            v = float("{:.2f}".format(v))
+            print("==================================================================================")
+            print(f"Trying alpha = {v}, lambda = {lmd}, p = {p}")
+            print("==================================================================================")
+            ts = linucb_policy(len(articles), len(articles) * 6 + 6,v,lmd)
+            ts.setup_arms(articles)
+            aligned_time_steps = 0
+            random_aligned_time_steps = 0
+            cumulative_rewards = 0
+            random_cumulative_rewards = 0
+            aligned_ctr = []
+            random_aligned_ctr = []
+            t = 1
+            # print('pass')
+            for root, dirs, files in os.walk(folder):
+                # print('pass 1')
+                for filename in files:
+                    # print('pass 2')
+                    path = os.path.join(root, filename)
+                    # print(path)
+                    ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
+                        path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
+                        random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
+                    # print('pass 3')
+                    break
+            plt.plot(aligned_ctr, label=f"alpha = {v}, p = {p}, lamda = {lmd}")
+            if v == 0.01:
+                plt.plot(random_aligned_ctr, label=f"Random CTR")
+                random_results = random_cumulative_rewards
+            print("total reward earned from Linucb:", cumulative_rewards)
+            ts.printBandits()
     print("total reward earned from Random:", random_results)
+    ct = datetime.datetime.now()
     plt.ylabel("CTR ratio (For LinUCB and Random)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"./parallel_non_lazy_linucb.png")
+    plt.savefig(f"Results/parallel_lazy_linucb-{ct}.png")
 
 if __name__ == "__main__":
-    start = datetime.now()
-    experiment("data/R6A_spec")
-    end = datetime.now()
+    start = datetime.datetime.now()
+    experiment("data/R6A_spec", [600, 800, 1000, 1500])
+    end = datetime.datetime.now()
     print(f"Duration: {end - start}")
