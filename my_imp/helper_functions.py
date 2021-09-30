@@ -192,8 +192,16 @@ def bin_search(a, x):
         return i
     else:
         return -1
-
-
+def print_example_banner(title):
+    title_length = len(title)
+    banner_length = title_length + 2 * 10
+    repeat_1 = "-"*(banner_length - 2)
+    banner_top = f"+{repeat_1}+"
+    repeat_2 = " "*9
+    banner_middle = f"|{repeat_2}{title}{repeat_2}|"
+    print(banner_top)
+    print(banner_middle)
+    print(banner_top)
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
-    print(num_articles("data/R6A_spec"))
+    print_example_banner("EXPERIMENT")

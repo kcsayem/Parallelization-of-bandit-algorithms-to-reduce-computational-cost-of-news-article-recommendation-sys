@@ -171,14 +171,10 @@ def makeContext(pool_articles, user_features, articles):
 
 def experiment(folder, p):
     articles = get_all_articles()
-    v_s = np.arange(0.01, 0.5, 0.1)
-    v_s = v_s[:1]
+    v_s = [0.3]
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))
-        print("================================================")
-        print(f"TRYING C = {v}")
-        print("================================================")
         ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
@@ -194,7 +190,7 @@ def experiment(folder, p):
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p)
-        plt.plot(aligned_ctr, label=f"P = {p}")
+        plt.plot(aligned_ctr, label=f"P = {p}, v = {v}")
         if v == 0.01:
             # plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
