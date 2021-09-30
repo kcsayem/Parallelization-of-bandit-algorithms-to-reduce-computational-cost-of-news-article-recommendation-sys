@@ -27,6 +27,7 @@ class ThompsonSampling:
         self.d = contextDimension
         self.B = np.identity(self.d) * lmb
         self.B_inv = np.linalg.inv(self.B)
+        self.B_previous = np.copy(self.B)
         v = c  # * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.R = R
         self.c = c
@@ -35,6 +36,7 @@ class ThompsonSampling:
         self.theta_hat = np.zeros(self.d)
         self.theta_estimate = rng.multivariate_normal(
             self.theta_hat, self.v_squared * self.B_inv, method='cholesky')
+        self.doubling_rounds = 0
         self.bandits = []
         self.regrets = []
 
@@ -60,6 +62,13 @@ class ThompsonSampling:
         self.B += bc_sum
         self.B_inv = inverse(self.B_inv, bc_sum)
         self.theta_hat = np.dot(self.B_inv, self.f)
+
+    def doubling_round(self):
+        if ispositivesemidifinate(self.B - 2 * self.B_previous):
+            self.doubling_rounds += 1
+            self.B_previous = np.copy(self.B)
+        else:
+            self.B_previous = np.copy(self.B)
 
     def pull(self, context):
         theta_estimate = self.sample()
@@ -88,6 +97,7 @@ class ThompsonSampling:
 
     def printBandits(self):
         print("num times selected each bandit:", [b.N for b in self.bandits])
+        print('Doubling Rounds:', self.doubling_rounds)
 
     def getRegrets(self):
         return self.regrets
@@ -105,16 +115,6 @@ class Bandit:
 
     def update(self):
         self.N += 1
-
-
-def plot(bandits, trial):
-    x = np.linspace(0, 1, 200)
-    for b in bandits:
-        y = beta.pdf(x, b.a, b.b)
-        plt.plot(x, y, label=f"real p: {b.p:.4f}, win rate = {b.a - 1}/{b.N}")
-    plt.title(f"Bandit distributions after {trial} trials")
-    plt.legend()
-    plt.show()
 
 
 def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
@@ -153,6 +153,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
+        ts.doubling_round()
         ts.update_batch(clicks, contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1

@@ -24,9 +24,10 @@ SEED = 42
 
 
 class ThompsonSampling:
-    def __init__(self, contextDimension, R, c):
+    def __init__(self, contextDimension, R, c, lmb):
         self.d = contextDimension
-        self.B = np.identity(self.d)
+        self.B = np.identity(self.d) * lmb
+        self.B_previous = np.copy(self.B)
         self.B_inv = np.linalg.inv(self.B)
         v = c  # R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
         self.R = R
@@ -36,6 +37,7 @@ class ThompsonSampling:
         self.theta_hat = np.zeros(self.d)
         self.theta_estimate = rng.multivariate_normal(
             self.theta_hat, self.v_squared * self.B_inv, method='cholesky')
+        self.doubling_rounds = 0
         self.bandits = []
         self.regrets = []
 
@@ -57,6 +59,13 @@ class ThompsonSampling:
             rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
         self.f += rc_sum
         self.theta_hat = np.dot(self.B_inv, self.f)
+
+    def doubling_round(self):
+        if ispositivesemidifinate(self.B - 2 * self.B_previous):
+            self.doubling_rounds += 1
+            self.B_previous = np.copy(self.B)
+        else:
+            self.B_previous = np.copy(self.B)
 
     def pull(self, context):
         theta_estimate = self.sample()
@@ -85,6 +94,7 @@ class ThompsonSampling:
 
     def printBandits(self):
         print("num times selected each bandit:", [b.N for b in self.bandits])
+        print('Doubling Rounds:', self.doubling_rounds)
 
     def getRegrets(self):
         return self.regrets
@@ -141,6 +151,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
+        ts.doubling_round()
         ts.update_batch(clicks, contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
@@ -175,7 +186,7 @@ def experiment(folder, p):
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))
-        ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v)
+        ts = ThompsonSampling(len(articles) * 6 + 6, 0.0001, v, 0.2)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
         random_aligned_time_steps = 0
