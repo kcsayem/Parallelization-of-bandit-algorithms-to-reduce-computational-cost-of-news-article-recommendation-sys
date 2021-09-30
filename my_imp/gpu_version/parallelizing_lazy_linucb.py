@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 import numpy as np
+import cupy as cp
+import matplotlib
 import matplotlib.pyplot as plt
 import sys
 import ast
@@ -8,6 +10,7 @@ from tqdm import tqdm
 from helper_functions import *
 import math
 import datetime
+matplotlib.use('tkagg')
 
 # Create class object for a single linear ucb   arm
 class linucb_arm():
@@ -33,9 +36,10 @@ class linucb_arm():
         # # print("Theta Shape", theta.shape)
         # # print("Context Shape", x_array.shape)
         # # print("A Shape", A.shape)
-        x = x_array.reshape([-1, 1])
+        x = cp.asarray(x_array)
+        x = x.reshape([-1, 1])
         # p = _calc_UCB(self.alpha, x_array, theta, A)
-        p = np.dot(theta.T, x) + self.alpha * np.sqrt(np.dot(x.T, np.dot(A_inv, x)))
+        p = cp.dot(theta.T, x) + self.alpha * cp.sqrt(cp.dot(x.T, cp.dot(A_inv, x)))
         # print('p:',p)
         return p
 
@@ -59,17 +63,17 @@ class linucb_policy():
 
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
-        self.A = np.identity(d) * lmd 
-        self.A_previous = np.array(self.A, copy=True)
-        self.A_inv = np.linalg.inv(self.A)
+        self.A = cp.identity(d) * lmd
+        self.A_previous = self.A
+        self.A_inv = cp.linalg.inv(self.A)
 
         # b: (d x 1) corresponding response vector.
         # Equals to D_a.T * c_a in ridge regression formulation
-        self.b = np.zeros([d, 1])
+        self.b = cp.zeros([d, 1])
 
     def calc_theta(self):
         # A_inv = np.linalg.inv(self.A)
-        self.theta = np.dot(self.A_inv, self.b)
+        self.theta = cp.dot(self.A_inv, self.b)
         # self.theta = _calc_theta(self.A, self.b)
         return self.theta
 
@@ -77,21 +81,24 @@ class linucb_policy():
         self.linucb_arms = [linucb_arm(article_ids[k], self.alpha) for k in range(len(article_ids))]
 
     def reward_update_iteration(self, x):
+        # converting to gpu
+        x = cp.asarray(x)
         # Reshape covariates input into (d x 1) shape vector
         x = x.reshape([-1, 1])
 
         # Update A which is (d * d) matrix.
-        self.A += np.dot(x, x.T)
+        self.A += cp.dot(x, x.T)
         # update A_inv
-        self.A_inv = inverse(self.A_inv, np.dot(x, x.T))
+        self.A_inv = inverse(self.A_inv, cp.dot(x, x.T))
         
     
     def reward_update_batch(self, rewards, contexts):
         rc_sum = 0
         bc_sum = 0
         for i in range(len(contexts)):
-            rc_sum+=contexts[i][list(contexts[i].keys())[0]]*rewards[i]
-            bc_sum+=np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
+            context_gpu =  cp.asarray(contexts[i][list(contexts[i].keys())[0]])
+            rc_sum+=context_gpu*rewards[i]
+            bc_sum+=np.outer(context_gpu, context_gpu)
         self.b += rc_sum.reshape([-1,1])
         self.A = bc_sum
         self.A_inv = inverse(self.A_inv, bc_sum)
@@ -100,19 +107,19 @@ class linucb_policy():
 
     def printBandits(self):
         print("num times selected each bandit:", [b.N for b in self.linucb_arms])
-        print('Doubling Round', self.doubling_rounds)
-    
-    def doubling_round(self):
-        if ispositivesemidifinate(self.A - 2 * self.A_previous):
-            self.doubling_rounds += 1
-            self.A_previous = np.array(self.A, copy=True)
-        else:
-            self.A_previous = np.array(self.A, copy=True)
+        print('Doubling Rounds:', self.doubling_rounds)
 
     def calculate_projection(self, u, v):
         v_norm = np.sqrt(sum(v ** 2))
         proj_on_v = (np.dot(u, v) / v_norm ** 2) * v
         return proj_on_v
+
+    def doubling_round(self):
+        if ispositivesemidifinate(self.A - 2 * self.A_previous):
+            self.doubling_rounds += 1
+            self.A_previous = self.A
+        else:
+            self.A_previous = self.A
     
 
     def select_arm(self, context):
@@ -184,6 +191,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
         arm_indexes = []
         for c in range(len(contexts)):
             arm_index, specific_bandits = ts.select_arm(contexts[c])
+            ts.reward_update_iteration(contexts[c][arm_index])
             arm_indexes.append(arm_index)
         for r in range(len(contexts)):
             #random_index = np.random.choice(specific_bandits).index
@@ -196,10 +204,9 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
-        ts.reward_update_batch(clicks,contexts)
-        # Doubling round Check
+        # Doubling Round Check
         ts.doubling_round()
-
+        ts.reward_update_batch(clicks,contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
         #     random_cumulative_rewards += click
@@ -257,14 +264,14 @@ def experiment(folder, p):
             print("total reward earned from Linucb:", cumulative_rewards)
             ts.printBandits()
     print("total reward earned from Random:", random_results)
+    ct = datetime.datetime.now()
     plt.ylabel("CTR ratio (For LinUCB and Random)")
     plt.xlabel("Time")
     plt.legend()
-    ct = datetime.datetime.now()
-    plt.savefig(f"Results/parallel_non_lazy_linucb-{str(ct)}.png")
+    plt.savefig(f"../Results/parallel_lazy_linucb-{ct}.png")
 
 if __name__ == "__main__":
     start = datetime.datetime.now()
-    experiment("data/R6A_spec", [600, 800, 1000, 1500])
+    experiment("../data/R6A_spec", [600, 800, 1000, 1500])
     end = datetime.datetime.now()
     print(f"Duration: {end - start}")

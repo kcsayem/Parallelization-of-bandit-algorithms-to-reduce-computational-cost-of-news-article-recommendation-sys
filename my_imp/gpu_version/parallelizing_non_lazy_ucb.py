@@ -60,7 +60,7 @@ class linucb_policy():
         # A: (d x d) matrix = D_a.T * D_a + I_d.
         # The inverse of A is used in ridge regression
         self.A = np.identity(d) * lmd 
-        self.A_previous = np.array(self.A, copy=True)
+        self.A_previous = self.A
         self.A_inv = np.linalg.inv(self.A)
 
         # b: (d x 1) corresponding response vector.
@@ -105,9 +105,9 @@ class linucb_policy():
     def doubling_round(self):
         if ispositivesemidifinate(self.A - 2 * self.A_previous):
             self.doubling_rounds += 1
-            self.A_previous = np.array(self.A, copy=True)
+            self.A_previous = self.A
         else:
-            self.A_previous = np.array(self.A, copy=True)
+            self.A_previous = self.A
 
     def calculate_projection(self, u, v):
         v_norm = np.sqrt(sum(v ** 2))
@@ -264,7 +264,7 @@ def experiment(folder, p):
     plt.savefig(f"Results/parallel_non_lazy_linucb-{str(ct)}.png")
 
 if __name__ == "__main__":
-    start = datetime.datetime.now()
-    experiment("data/R6A_spec", [600, 800, 1000, 1500])
-    end = datetime.datetime.now()
+    start = datetime.now()
+    experiment("data/R6A_spec")
+    end = datetime.now()
     print(f"Duration: {end - start}")
