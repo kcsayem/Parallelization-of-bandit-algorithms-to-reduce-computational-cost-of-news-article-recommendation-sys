@@ -1,71 +1,132 @@
-from __future__ import print_function, division
-from builtins import range
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import beta
-import ast,sys
+from helper_functions import *
+from numpy.random import default_rng
 
-np.random.seed(2)
-NUM_TRIALS = 2000
-BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
+
+class ThompsonSampling:
+    def __init__(self, contextDimension, R, c, lmb, SEED):
+        self.rng = default_rng()
+        self.SEED = SEED
+        self.d = contextDimension
+        self.B = np.identity(self.d) * lmb
+        self.B_inv = np.linalg.inv(self.B)
+        self.B_previous = np.copy(self.B)
+        v = c  # * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
+        self.R = R
+        self.c = c
+        self.v_squared = v ** 2
+        self.f = np.zeros(self.d)
+        self.theta_hat = np.zeros(self.d)
+        self.theta_estimate = self.rng.multivariate_normal(
+            self.theta_hat, self.v_squared * self.B_inv, method='cholesky')
+        self.doubling_rounds = 0
+        self.bandits = []
+        self.regrets = []
+
+    def setUpBandits(self, articleIds):
+        self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
+
+    def sample(self):
+        self.theta_estimate = random_sampling(
+            self.theta_hat, self.v_squared * self.B_inv, self.d, 1, self.SEED)
+        return self.theta_estimate
+
+    def update_iteration(self, context):
+        self.B += np.outer(context, context)
+        self.B_inv = inverse(self.B_inv, np.outer(context, context))
+
+    def update_batch(self, rewards, contexts):
+        rc_sum = 0
+        bc_sum = 0
+        for i in range(len(contexts)):
+            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
+            bc_sum += np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
+        self.f += rc_sum
+        self.B += bc_sum
+        self.B_inv = inverse(self.B_inv, bc_sum)
+        self.theta_hat = np.dot(self.B_inv, self.f)
+
+    def doubling_round(self):
+        if ispositivesemidifinate(self.B - 2 * self.B_previous):
+            self.doubling_rounds += 1
+            self.B_previous = np.copy(self.B)
+        else:
+            self.B_previous = np.copy(self.B)
+
+    def pull(self, context):
+        theta_estimate = self.sample()
+        specific_bandits = []
+        for key in context:
+            for bandit in self.bandits:
+                if key == bandit.index:
+                    specific_bandits.append(bandit)
+                    break
+        max_ = -1
+        max_value = float('-inf')
+        for b in specific_bandits:
+            cur_value = np.dot(context[b.index].T, theta_estimate)
+            if max_value < cur_value:
+                max_value = cur_value
+                max_ = b.index
+        for b in self.bandits:
+            if b.index == max_:
+                b.update()
+                break
+        estimated_reward = max_value
+        return estimated_reward, max_, specific_bandits
+
+    def getEstimate(self):
+        return self.theta_estimate
+
+    def printBandits(self):
+        print("num times selected each bandit:", [b.N for b in self.bandits])
+        print('Doubling Rounds:', self.doubling_rounds)
+
+    def getRegrets(self):
+        return self.regrets
+
+    def updateV(self, t):
+        v = self.c * self.R * math.sqrt(24 * self.d / 0.05 * math.log(t / 0.05))
+        self.v_squared = v ** 2
 
 
 class Bandit:
-  def __init__(self, p):
-    self.p = p
-    self.a = 1
-    self.b = 1
-    self.N = 0 # for information only
+    def __init__(self, index):
+        self.regret = 0
+        self.N = 0
+        self.index = index
 
-  def pull(self):
-    return np.random.random() < self.p
-
-  def sample(self):
-    return np.random.beta(self.a, self.b)
-
-  def update(self, x):
-    self.a += x
-    self.b += 1 - x
-    self.N += 1
+    def update(self):
+        self.N += 1
 
 
-def plot(bandits, trial):
-  x = np.linspace(0, 1, 200)
-  for b in bandits:
-    y = beta.pdf(x, b.a, b.b)
-    plt.plot(x, y, label=f"real p: {b.p:.4f}, win rate = {b.a - 1}/{b.N}")
-  plt.title(f"Bandit distributions after {trial} trials")
-  plt.legend()
-  plt.show()
+class LazyThompsonSampling(ThompsonSampling):
+    def __init__(self, contextDimension, R, c, lmb, SEED):
+        ThompsonSampling.__init__(self, contextDimension, R, c, lmb, SEED)
+
+    def update_iteration(self, context):
+        self.B += np.outer(context, context)
+        self.B_inv = inverse(self.B_inv, np.outer(context, context))
+
+    def update_batch(self, rewards, contexts):
+        rc_sum = 0
+        for i in range(len(contexts)):
+            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
+        self.f += rc_sum
+        self.theta_hat = np.dot(self.B_inv, self.f)
 
 
-def experiment():
-  BANDIT_PROBABILITIES = ast.literal_eval(sys.argv[1])
-  bandits = [Bandit(p) for p in BANDIT_PROBABILITIES]
-  sample_points = [5,10,50,100,500,1000,1500,1999]
-  rewards = np.zeros(NUM_TRIALS)
-  for i in range(NUM_TRIALS):
-    # Thompson sampling
-    j = np.argmax([b.sample() for b in bandits])
+class NonLazyThompsonSampling(ThompsonSampling):
+    def __init__(self, contextDimension, R, c, lmb, SEED):
+        ThompsonSampling.__init__(self, contextDimension, R, c, lmb, SEED)
 
-    # plot the posteriors
-    if i in sample_points:
-      plot(bandits, i)
-
-    # pull the arm for the bandit with the largest sample
-    x = bandits[j].pull()
-
-    # update rewards
-    rewards[i] = x
-
-    # update the distribution for the bandit whose arm we just pulled
-    bandits[j].update(x)
-
-  # print total reward
-  print("total reward earned:", rewards.sum())
-  print("overall win rate:", rewards.sum() / NUM_TRIALS)
-  print("num times selected each bandit:", [b.N for b in bandits])
-
-
-if __name__ == "__main__":
-  experiment()
+    def update_batch(self, rewards, contexts):
+        rc_sum = 0
+        bc_sum = 0
+        for i in range(len(contexts)):
+            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
+            bc_sum += np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
+        self.f += rc_sum
+        self.B += bc_sum
+        self.B_inv = inverse(self.B_inv, bc_sum)
+        self.theta_hat = np.dot(self.B_inv, self.f)
