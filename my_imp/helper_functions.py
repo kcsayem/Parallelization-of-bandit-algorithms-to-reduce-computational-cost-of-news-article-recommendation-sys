@@ -3,12 +3,19 @@ import math
 import numpy as np
 import mmap
 import os
+#must set these before loading numpy:
+os.environ["OMP_NUM_THREADS"] = '16' # export OMP_NUM_THREADS=16
+os.environ["OPENBLAS_NUM_THREADS"] = '16' # export OPENBLAS_NUM_THREADS=16
+os.environ["MKL_NUM_THREADS"] = '16' # export MKL_NUM_THREADS=16
+os.environ["VECLIB_MAXIMUM_THREADS"] = '16' # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = '16' # export NUMEXPR_NUM_THREADS=6
 from tqdm import tqdm
 import numba as nb
 from numba import cuda, float32
 from bisect import bisect_left
 import sys
 import warnings
+
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -138,7 +145,7 @@ def is_positive_definate(A):
 
 
 @nb.njit(fastmath=True, parallel=True)
-def ispositivesemidifinate(A):
+def isPositivesemiDifinate(A):
     '''
     if trace of a matrics is zero or more then it is positive semidefinate.
     '''
@@ -149,6 +156,31 @@ def ispositivesemidifinate(A):
             return False
     else:
         return False
+
+# @nb.njit(parallel=True)
+def ispositivesemidifinate(A):
+    '''
+    if trace of a matrics is zero or more then it is positive semidefinate.
+    '''
+    for i in range(0, len(A)):
+        diagonal = A[i][i]
+
+        if diagonal > 0:
+            row = A[i]
+            row_1 = row[:i]
+            row_2 = row[i+1:]
+            row = np.concatenate([row_1, row_2])
+            row_sum = np.abs(np.sum(row))
+
+            # column = A[:, i]
+            # column_1 = column[:i]
+            # column_2 = column[i+1:]
+            # column = np.concatenate([column_1, column_2])
+            # column_sum = np.abs(np.sum(column))
+
+            if row_sum <= diagonal:
+                return True
+    return False
 
 
 def check_readline(file):
@@ -204,4 +236,6 @@ def print_example_banner(title):
     print(banner_top)
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
-    print_example_banner("EXPERIMENT")
+    # print_example_banner("EXPERIMENT")
+    A = np.identity(40) * 0.3
+    print(ispositivesemidifinate(A))
