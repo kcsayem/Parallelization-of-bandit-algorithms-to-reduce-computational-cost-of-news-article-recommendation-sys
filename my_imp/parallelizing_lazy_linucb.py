@@ -1,4 +1,11 @@
 import os
+# #must set these before loading numpy:
+os.environ["OMP_NUM_THREADS"] = '16' # export OMP_NUM_THREADS=16
+os.environ["OPENBLAS_NUM_THREADS"] = '16' # export OPENBLAS_NUM_THREADS=16
+os.environ["MKL_NUM_THREADS"] = '16' # export MKL_NUM_THREADS=16
+os.environ["VECLIB_MAXIMUM_THREADS"] = '16' # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = '16' # export NUMEXPR_NUM_THREADS=6
+# os.environ['MKL_VERBOSE']="1"
 from datetime import datetime
 import numpy as np
 import matplotlib
@@ -10,6 +17,7 @@ from helper_functions import *
 import math
 import datetime
 matplotlib.use('tkagg')
+
 
 # Create class object for a single linear ucb   arm
 class linucb_arm():
@@ -110,10 +118,10 @@ class linucb_policy():
         return proj_on_v
 
     def doubling_round(self):
-        if ispositivesemidifinate(self.A - 2 * self.A_previous):
-            self.doubling_rounds += 1
+        if ispositivesemidifinate(2 * self.A_previous - self.A):
             self.A_previous = np.array(self.A, copy=True)
         else:
+            self.doubling_rounds += 1
             self.A_previous = np.array(self.A, copy=True)
     
 
@@ -225,6 +233,7 @@ def experiment(folder, p):
     lmd = 0.2
     ps = p
     random_results = []
+    plt.figure()
     for v in alphas:
         for p in ps:
             v = float("{:.2f}".format(v))
@@ -260,7 +269,8 @@ def experiment(folder, p):
             ts.printBandits()
     print("total reward earned from Random:", random_results)
     ct = datetime.datetime.now()
-    plt.ylabel("CTR ratio (For LinUCB and Random)")
+    ct = ct.strftime('%Y-%m-%d-%H-%M-%S')
+    plt.ylabel("CTR ratio (Parallel lazy LinUCB and Random)")
     plt.xlabel("Time")
     plt.legend()
     plt.savefig(f"Results/parallel_lazy_linucb-{ct}.png")

@@ -1,4 +1,11 @@
 import os
+#must set these before loading numpy:
+os.environ["OMP_NUM_THREADS"] = '16' # export OMP_NUM_THREADS=16
+os.environ["OPENBLAS_NUM_THREADS"] = '16' # export OPENBLAS_NUM_THREADS=16
+os.environ["MKL_NUM_THREADS"] = '16' # export MKL_NUM_THREADS=16
+os.environ["VECLIB_MAXIMUM_THREADS"] = '16' # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = '16' # export NUMEXPR_NUM_THREADS=6
+# os.environ['MKL_VERBOSE']="1"
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,6 +15,7 @@ from tqdm import tqdm
 from helper_functions import *
 import math
 import datetime
+
 
 # Create class object for a single linear ucb   arm
 class linucb_arm():
@@ -103,10 +111,10 @@ class linucb_policy():
         print('Doubling Round', self.doubling_rounds)
     
     def doubling_round(self):
-        if ispositivesemidifinate(self.A - 2 * self.A_previous):
-            self.doubling_rounds += 1
+        if ispositivesemidifinate(2 * self.A_previous - self.A):
             self.A_previous = np.array(self.A, copy=True)
         else:
+            self.doubling_rounds += 1
             self.A_previous = np.array(self.A, copy=True)
 
     def calculate_projection(self, u, v):
@@ -223,6 +231,7 @@ def experiment(folder, p):
     lmd = 0.2
     ps = p
     random_results = []
+    plt.figure()
     for v in alphas:
         for p in ps:
             v = float("{:.2f}".format(v))
@@ -257,10 +266,11 @@ def experiment(folder, p):
             print("total reward earned from Linucb:", cumulative_rewards)
             ts.printBandits()
     print("total reward earned from Random:", random_results)
-    plt.ylabel("CTR ratio (For LinUCB and Random)")
+    plt.ylabel("CTR ratio (Parallel Non-Lazy LinUCB and Random)")
     plt.xlabel("Time")
     plt.legend()
     ct = datetime.datetime.now()
+    ct = ct.strftime('%Y-%m-%d-%H-%M-%S')
     plt.savefig(f"Results/parallel_non_lazy_linucb-{str(ct)}.png")
 
 if __name__ == "__main__":
