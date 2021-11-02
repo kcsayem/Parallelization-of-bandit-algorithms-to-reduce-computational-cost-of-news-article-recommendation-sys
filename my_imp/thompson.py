@@ -1,6 +1,9 @@
 import numpy as np
 from helper_functions import *
 from numpy.random import default_rng
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ThompsonSampling:
@@ -79,8 +82,10 @@ class ThompsonSampling:
         return self.theta_estimate
 
     def printBandits(self):
-        print("num times selected each bandit:", [b.N for b in self.bandits])
-        print('Doubling Rounds:', self.doubling_rounds)
+        msg = f"Num times selected each bandit: {[b.N for b in self.bandits]}"
+        logger.info(msg)
+        msg = f"Doubling Rounds: {self.doubling_rounds}"
+        logger.info(msg)
 
     def getRegrets(self):
         return self.regrets

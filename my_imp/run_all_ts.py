@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 from datetime import datetime
+import logging
 
 SEED = 42
 
 
 def run(processes):
+    logging.basicConfig(filename='run_thompson.log', level=logging.INFO, format='%(message)s')
     warnings.filterwarnings('ignore')
     np.random.seed(SEED)
     path = "data/R6A_spec"
@@ -21,8 +23,7 @@ def run(processes):
         experiment(path, p, True)
         end = datetime.now()
         ptb(f"DURATION FOR P = {p}: {end - start}")
-    print()
-    print()
+    logging.info("\n\n")
     ptb("RUNNING NON-LAZY EXPERIMENTS")
     for p in processes:
         ptb(f"TRYING WITH P = {p}")
@@ -37,7 +38,7 @@ def yahoo_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewar
     f = open(path, "r")
     max_ = get_num_lines(path)
     for iteration in tqdm(range(math.ceil(max_ / p))):
-        # if iteration==100000:
+        # if iteration==1000:
         #     break
         lines = []
         for i in range(p):
@@ -111,9 +112,9 @@ def experiment(folder, p, lazy):
         if v == 0.01:
             # plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
-        print("total reward earned from Thompson:", cumulative_rewards)
+        logging.info(f"Total reward earned from Thompson: {cumulative_rewards}")
         ts.printBandits()
-    print("total reward earned from Random:", random_results)
+    logging.info(f"Total reward earned from Random: {random_results}")
     plt.ylabel("CTR ratio (For Thompson Sampling and Random)")
     plt.xlabel("Time")
     plt.legend()

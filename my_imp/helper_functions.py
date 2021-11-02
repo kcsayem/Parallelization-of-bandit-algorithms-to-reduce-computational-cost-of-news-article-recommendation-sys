@@ -3,20 +3,22 @@ import math
 import numpy as np
 import mmap
 import os
-#must set these before loading numpy:
-os.environ["OMP_NUM_THREADS"] = '16' # export OMP_NUM_THREADS=16
-os.environ["OPENBLAS_NUM_THREADS"] = '16' # export OPENBLAS_NUM_THREADS=16
-os.environ["MKL_NUM_THREADS"] = '16' # export MKL_NUM_THREADS=16
-os.environ["VECLIB_MAXIMUM_THREADS"] = '16' # export VECLIB_MAXIMUM_THREADS=4
-os.environ["NUMEXPR_NUM_THREADS"] = '16' # export NUMEXPR_NUM_THREADS=6
+
+# must set these before loading numpy:
+os.environ["OMP_NUM_THREADS"] = '16'  # export OMP_NUM_THREADS=16
+os.environ["OPENBLAS_NUM_THREADS"] = '16'  # export OPENBLAS_NUM_THREADS=16
+os.environ["MKL_NUM_THREADS"] = '16'  # export MKL_NUM_THREADS=16
+os.environ["VECLIB_MAXIMUM_THREADS"] = '16'  # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = '16'  # export NUMEXPR_NUM_THREADS=6
 from tqdm import tqdm
 import numba as nb
 from numba import cuda, float32
 from bisect import bisect_left
 import sys
 import warnings
+import logging
 
-
+logger = logging.getLogger(__name__)
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
@@ -157,6 +159,7 @@ def isPositivesemiDifinate(A):
     else:
         return False
 
+
 # @nb.njit(parallel=True)
 def ispositivesemidifinate(A):
     '''
@@ -168,7 +171,7 @@ def ispositivesemidifinate(A):
         if diagonal > 0:
             row = A[i]
             row_1 = row[:i]
-            row_2 = row[i+1:]
+            row_2 = row[i + 1:]
             row = np.concatenate([row_1, row_2])
             row_sum = np.abs(np.sum(row))
 
@@ -224,16 +227,19 @@ def bin_search(a, x):
         return i
     else:
         return -1
+
+
 def print_example_banner(title):
     title_length = len(title)
     banner_length = title_length + 2 * 10
-    repeat_1 = "-"*(banner_length - 2)
+    repeat_1 = "-" * (banner_length - 2)
     banner_top = f"+{repeat_1}+"
-    repeat_2 = " "*9
+    repeat_2 = " " * 9
     banner_middle = f"|{repeat_2}{title}{repeat_2}|"
-    print(banner_top)
-    print(banner_middle)
-    print(banner_top)
+    msg = f"{banner_top}\n{banner_middle}\n{banner_top}"
+    logger.info(msg)
+
+
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
     # print_example_banner("EXPERIMENT")
