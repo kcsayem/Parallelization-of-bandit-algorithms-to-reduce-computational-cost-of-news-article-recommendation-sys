@@ -47,10 +47,10 @@ class ThompsonSampling:
         self.theta_hat = np.dot(self.B_inv, self.f)
 
     def doubling_round(self):
-        if ispositivesemidifinate(self.B - 2 * self.B_previous):
-            self.doubling_rounds += 1
+        if ispositivesemidifinate(2 * self.B_previous - self.B):
             self.B_previous = np.copy(self.B)
         else:
+            self.doubling_rounds += 1
             self.B_previous = np.copy(self.B)
 
     def pull(self, context):

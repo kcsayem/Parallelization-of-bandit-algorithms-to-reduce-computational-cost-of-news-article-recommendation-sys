@@ -107,7 +107,7 @@ def experiment(folder, p, lazy):
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = yahoo_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p)
-        plt.plot(aligned_ctr, label=f"P = {p}, v = {v}")
+        plt.plot(aligned_ctr, label=f"P = {p}, v = {v}, {'Lazy' if lazy else 'NonLazy'}")
         if v == 0.01:
             # plt.plot(random_aligned_ctr, label=f"Random CTR")
             random_results = random_cumulative_rewards
