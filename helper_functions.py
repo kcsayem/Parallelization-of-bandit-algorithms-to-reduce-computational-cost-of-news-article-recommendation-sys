@@ -161,7 +161,7 @@ def isPositivesemiDifinate(A):
 
 
 # @nb.njit(parallel=True)
-def ispositivesemidifinate(A):
+def ispositive_semidifinate(A):
     '''
     if trace of a matrics is zero or more then it is positive semidefinate.
     '''
@@ -185,6 +185,14 @@ def ispositivesemidifinate(A):
                 return True
     return False
 
+
+# @nb.njit(fastmath=True, parallel=True)
+def ispositivesemidifinate(A):
+    values, vector = np.linalg.eig(A)
+    for value in values:
+        if value < 0:
+            return False
+    return True
 
 def check_readline(file):
     import math
