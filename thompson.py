@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class ThompsonSampling:
-    def __init__(self, contextDimension, R, c, lmb, SEED):
+    def __init__(self, contextDimension, R, c, lmb=1, SEED=42):
         self.rng = default_rng()
         self.SEED = SEED
         self.d = contextDimension
@@ -33,6 +33,11 @@ class ThompsonSampling:
         self.theta_estimate = random_sampling(
             self.theta_hat, self.v_squared * self.B_inv, self.d, 1, self.SEED)
         return self.theta_estimate
+
+    def update(self, reward, context):
+        self.f += context * reward
+        self.B_inv = inverse(self.B_inv, np.outer(context, context))
+        self.theta_hat = np.dot(self.B_inv, self.f)
 
     def update_iteration(self, context):
         self.B += np.outer(context, context)

@@ -38,12 +38,13 @@ def inverse(A_inv, B):
 
 
 def get_num_lines(file_path):
-    fp = open(file_path, 'r+')
-    buf = mmap.mmap(fp.fileno(), 0)
-    lines = 0
-    while buf.readline():
-        lines += 1
-    return lines
+    # fp = open(file_path, 'r+')
+    # buf = mmap.mmap(fp.fileno(), 0)
+    # lines = 0
+    # while buf.readline():
+    #     lines += 1
+    # return lines
+    return 12328050
 
 
 def parseLine(line):
@@ -120,6 +121,15 @@ def get_all_articles():
                 109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
                 109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552]
 
+    articles = [109498, 109509, 109508, 109473, 109503, 109502, 109501, 109492, 109495, 109494, 109484, 109506, 109510,
+                109514, 109505, 109515, 109512, 109513, 109511, 109453, 109519, 109520, 109521, 109522, 109523, 109524,
+                109525, 109526, 109527, 109528, 109529, 109530, 109534, 109532, 109533, 109531, 109535, 109536, 109417,
+                109542, 109538, 109543, 109540, 109544, 109545, 109546, 109547, 109548, 109550, 109552, 109553, 109551,
+                109554, 109555, 109518, 109556, 109476, 109557,
+                109558, 109541, 109559, 109560, 109561, 109562, 109563, 109564, 109565, 109566, 109567, 109568, 109569,
+                109570, 109571, 109572, 109517, 109573, 109539, 109574, 109575, 109576, 109577, 109578, 109579, 109580,
+                109581, 109582, 109583, 109585, 109586, 109584, 109587, 109589, 109588]
+
     articles = sorted(articles)
     return articles
 
@@ -194,6 +204,7 @@ def ispositivesemidifinate(A):
             return False
     return True
 
+
 def check_readline(file):
     import math
     f = open(file, "r")
@@ -247,9 +258,17 @@ def print_example_banner(title):
     msg = f"{banner_top}\n{banner_middle}\n{banner_top}"
     logger.info(msg)
 
+def merge_files(folder):
+    new_file = open("3days","a")
+    for root, dirs, files in os.walk(folder):
+        for filename in files:
+            path = os.path.join(root,filename)
+            maxim = get_num_lines(path)
+            f = open(path,'r')
+            for line in tqdm(f,total=maxim):
+                new_file.write(line)
 
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
     # print_example_banner("EXPERIMENT")
-    A = np.identity(40) * 0.3
-    print(ispositivesemidifinate(A))
+    print(len(get_all_articles()))

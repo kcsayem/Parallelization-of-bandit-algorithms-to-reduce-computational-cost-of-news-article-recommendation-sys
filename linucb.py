@@ -44,7 +44,7 @@ class linucb_arm():
 
 class LinUCB:
 
-    def __init__(self, K_arms, d, alpha, lmd):
+    def __init__(self, K_arms, d, alpha, lmd=1):
         self.K_arms = K_arms
         self.linucb_arms = []
         self.d = d
