@@ -27,6 +27,8 @@ def run(processes):
     path = "data/R6A_spec"
     ptb("RUNNING LINUCB EXPERIMENTS")
     ptb("RUNNING SEQUENTIAL EXPERIMENTS")
+    print("RUNNING LINUCB EXPERIMENTS")
+    print("RUNNING SEQUENTIAL EXPERIMENTS")
     linSeq(path)
     # ptb("RUNNING LAZY EXPERIMENTS")
     # start = datetime.now()
@@ -34,6 +36,7 @@ def run(processes):
     # end = datetime.now()
     # ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
     ptb("RUNNING NON-LAZY EXPERIMENTS")
+    print("RUNNING NON-LAZY EXPERIMENTS")
     start = datetime.now()
     linNonLazy(path,processes)
     end = datetime.now()
@@ -45,6 +48,8 @@ def run(processes):
 
     ptb("RUNNING THOMPSON EXPERIMENTS")
     ptb("RUNNING SEQUENTIAL EXPERIMENTS")
+    print("RUNNING THOMPSON EXPERIMENTS")
+    print("RUNNING SEQUENTIAL EXPERIMENTS")
     experiment_seq(path)
     # ptb("RUNNING LAZY EXPERIMENTS")
     # for p in processes:
@@ -55,6 +60,7 @@ def run(processes):
     #     ptb(f"DURATION FOR P = {p}: {end - start}")
     # logging.info("\n\n")
     ptb("RUNNING NON-LAZY EXPERIMENTS")
+    print("RUNNING NON-LAZY EXPERIMENTS")
     for p in processes:
         ptb(f"TRYING WITH P = {p}")
         start = datetime.now()
@@ -157,8 +163,8 @@ def experiment(folder, p, lazy):
     random_results = []
     for v in v_s:
         v = float("{:.2f}".format(v))
-        ts = LazyThompsonSampling(len(articles) * 6 + 6, 0.0001, v, 0.2, SEED) if lazy else NonLazyThompsonSampling(
-            len(articles) * 6 + 6, 0.0001, v, 0.2, SEED)
+        ts = LazyThompsonSampling(len(articles) * 6 + 6, 0.0001, v, 1, SEED) if lazy else NonLazyThompsonSampling(
+            len(articles) * 6 + 6, 0.0001, v, 1, SEED)
         ts.setUpBandits(articles)
         aligned_time_steps = 0
         random_aligned_time_steps = 0
