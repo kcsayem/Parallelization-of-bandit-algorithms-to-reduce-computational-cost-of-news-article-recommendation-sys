@@ -11,70 +11,94 @@ from run_linucb import lazy_experiment as linLazy
 from run_linucb import non_lazy_experiment as linNonLazy
 from run_linucb import experiment as linSeq
 import time
+
 SEED = 42
 
 
-def run(processes):
-    if os.path.isfile("experiment.log"):
-        os.remove("experiment.log")
-    if os.path.isfile("Results/parallel_seq_linucb.png"):
-        os.remove("Results/parallel_seq_linucb.png")
-    if os.path.isfile("Results/parallel_seq_thompson.png"):
-        os.remove("Results/parallel_seq_thompson.png")
-    logging.basicConfig(filename='experiment.log', level=logging.INFO, format='%(message)s')
-    warnings.filterwarnings('ignore')
-    np.random.seed(SEED)
+def run_seq_par(processes, filename_ts, filename_ln):
+    if os.path.isfile(f"Results/{filename_ts}.png"):
+        os.remove(f"Results/{filename_ts}.png")
+    if os.path.isfile(f"Results/{filename_ln}.png"):
+        os.remove(f"Results/{filename_ln}.png")
     path = "data/R6A_spec"
     ptb("RUNNING LINUCB EXPERIMENTS")
     ptb("RUNNING SEQUENTIAL EXPERIMENTS")
-    print("RUNNING LINUCB EXPERIMENTS")
     print("RUNNING SEQUENTIAL EXPERIMENTS")
-    linSeq(path)
-    # ptb("RUNNING LAZY EXPERIMENTS")
-    # start = datetime.now()
-    # linLazy(path, processes)
-    # end = datetime.now()
-    # ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
-    ptb("RUNNING NON-LAZY EXPERIMENTS")
-    print("RUNNING NON-LAZY EXPERIMENTS")
     start = datetime.now()
-    linNonLazy(path,processes)
+    linNonLazy(path, [processes[0]], filename_ln)
     end = datetime.now()
     ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
-
+    ptb("RUNNING NONLAZY EXPERIMENTS")
+    print("RUNNING NONLAZY EXPERIMENTS")
+    start = datetime.now()
+    linNonLazy(path, [processes[1]], filename_ln)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[1]}: {end - start}")
 
     time.sleep(10)
-
+    plt.figure()
 
     ptb("RUNNING THOMPSON EXPERIMENTS")
     ptb("RUNNING SEQUENTIAL EXPERIMENTS")
     print("RUNNING THOMPSON EXPERIMENTS")
     print("RUNNING SEQUENTIAL EXPERIMENTS")
-    experiment_seq(path)
-    # ptb("RUNNING LAZY EXPERIMENTS")
-    # for p in processes:
-    #     ptb(f"TRYING WITH P = {p}")
-    #     start = datetime.now()
-    #     experiment(path, p, True)
-    #     end = datetime.now()
-    #     ptb(f"DURATION FOR P = {p}: {end - start}")
-    # logging.info("\n\n")
-    ptb("RUNNING NON-LAZY EXPERIMENTS")
-    print("RUNNING NON-LAZY EXPERIMENTS")
-    for p in processes:
-        ptb(f"TRYING WITH P = {p}")
-        start = datetime.now()
-        experiment(path, p, False)
-        end = datetime.now()
-        ptb(f"DURATION FOR P = {p}: {end - start}")
+    start = datetime.now()
+    experiment(path, processes[0], False, filename_ts)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
+
+    ptb("RUNNING NONLAZY EXPERIMENTS")
+    print("RUNNING NONLAZY EXPERIMENTS")
+    start = datetime.now()
+    experiment(path, processes[1], False, filename_ts)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[1]}: {end - start}")
+
+
+def run_par_par(processes, filename_ts, filename_ln):
+    if os.path.isfile(f"Results/{filename_ts}.png"):
+        os.remove(f"Results/{filename_ts}.png")
+    if os.path.isfile(f"Results/{filename_ln}.png"):
+        os.remove(f"Results/{filename_ln}")
+    ptb("RUNNING LINUCB EXPERIMENTS")
+    ptb("RUNNING LAZY EXPERIMENTS")
+    path = "data/R6A_spec"
+    start = datetime.now()
+    linLazy(path, [processes[0]], filename_ln)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
+    ptb("RUNNING NONLAZY EXPERIMENTS")
+    print("RUNNING NONLAZY EXPERIMENTS")
+    start = datetime.now()
+    linNonLazy(path, [processes[0]], filename_ln)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
+
+    plt.figure()
+    time.sleep(10)
+
+    ptb("RUNNING THOMPSON EXPERIMENTS")
+    ptb("RUNNING SEQUENTIAL EXPERIMENTS")
+    print("RUNNING THOMPSON EXPERIMENTS")
+    print("RUNNING LAZY EXPERIMENTS")
+    start = datetime.now()
+    experiment(path, processes[0], True, filename_ts)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
+    ptb("RUNNING NONLAZY EXPERIMENTS")
+    print("RUNNING NONLAZY EXPERIMENTS")
+    start = datetime.now()
+    experiment(path, processes[0], False, filename_ts)
+    end = datetime.now()
+    ptb(f"DURATION FOR P = {processes[0]}: {end - start}")
 
 
 def parallel_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p):
+                        random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p):
     f = open(path, "r")
     max_ = get_num_lines(path)
     for iteration in tqdm(range(math.ceil(max_ / p))):
-        # if iteration==10:
+        # if iteration >= 100:
         #     break
         lines = []
         for i in range(p):
@@ -107,7 +131,7 @@ def parallel_experiment(path, v, articles, ts, aligned_time_steps, cumulative_re
                 aligned_ctr.append(cumulative_rewards / aligned_time_steps)
             else:
                 clicks[r] = 0
-        #ts.doubling_round()
+        # ts.doubling_round()
         ts.update_batch(clicks, contexts)
         # if v == 0.01 and random_index == int(articleID):
         #     random_aligned_time_steps += 1
@@ -121,8 +145,9 @@ def parallel_experiment(path, v, articles, ts, aligned_time_steps, cumulative_re
     f.close()
     return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
+
 def sequential_experiment(path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
-                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t):
+                          random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t):
     f = open(path, "r")
     max_ = get_num_lines(path)
     iteration = 0
@@ -157,7 +182,7 @@ def sequential_experiment(path, v, articles, ts, aligned_time_steps, cumulative_
     return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
 
-def experiment(folder, p, lazy):
+def experiment(folder, p, lazy, savefile):
     articles = get_all_articles()
     v_s = [0.3]
     random_results = []
@@ -179,17 +204,19 @@ def experiment(folder, p, lazy):
                 ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t = parallel_experiment(
                     path, v, articles, ts, aligned_time_steps, cumulative_rewards, aligned_ctr,
                     random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t, p)
-        plt.plot(aligned_ctr, label=f"P = {p}, {'Lazy' if lazy else 'NonLazy'}")
+        lazy_nonlazy = 'Lazy' if lazy else 'NonLazy'
+        label = f'P = {p}, {lazy_nonlazy}' if p != 1 else 'Sequential'
+        plt.plot(aligned_ctr, label=label)
         # if v == 0.01:
         #     # plt.plot(random_aligned_ctr, label=f"Random CTR")
         #     random_results = random_cumulative_rewards
         logging.info(f"Total reward earned from Thompson: {cumulative_rewards}")
         ts.printBandits()
-    #logging.info(f"Total reward earned from Random: {random_results}")
+    # logging.info(f"Total reward earned from Random: {random_results}")
     plt.ylabel("CTR ratio (Thompson Sampling)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"Results/parallel_seq_thompson.png")
+    plt.savefig(f"Results/{savefile}.png")
 
 
 def experiment_seq(folder):
@@ -226,5 +253,13 @@ def experiment_seq(folder):
     plt.legend()
     plt.savefig(f"Results/parallel_seq_thompson.png")
 
+
 if __name__ == "__main__":
-    run([5000])
+    if os.path.isfile("experiment.log"):
+        os.remove("experiment.log")
+    logging.basicConfig(filename='experiment.log', level=logging.INFO, format='%(message)s')
+    warnings.filterwarnings('ignore')
+    np.random.seed(SEED)
+    run_seq_par([1, 1000], "seq_par_thompson", "seq_par_linucb")
+    plt.figure()
+    run_par_par([1000], "par_par_thompson", "par_par_linucb")

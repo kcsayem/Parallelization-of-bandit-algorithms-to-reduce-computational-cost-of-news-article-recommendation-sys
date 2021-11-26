@@ -18,7 +18,7 @@ def yahoo_experiment_non_lazy(path, v, articles, ts, aligned_time_steps, cumulat
     # for line_data in tqdm(f, total=max_):
     for iteration in tqdm(range(math.ceil(max_ / p))):
         lines = []
-        # if iteration==10:
+        # if iteration>=100:
         #     break
         for i in range(p):
             lines.append(f.readline())
@@ -73,7 +73,7 @@ def yahoo_experiment_lazy(path, v, articles, ts, aligned_time_steps, cumulative_
     max_ = get_num_lines(path)
     # for line_data in tqdm(f, total=max_):
     for iteration in tqdm(range(math.ceil(max_ / p))):
-        # if iteration==10:
+        # if iteration==100:
         #     break
         lines = []
         for i in range(p):
@@ -122,7 +122,7 @@ def yahoo_experiment_lazy(path, v, articles, ts, aligned_time_steps, cumulative_
     f.close()
     return ts, aligned_time_steps, cumulative_rewards, aligned_ctr, random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t
 
-def lazy_experiment(folder, p):
+def lazy_experiment(folder, p, savefile):
     articles = get_all_articles()
     # alphas = np.arange(0.01, 0.5, 0.1)
     alphas = [0.3]
@@ -169,10 +169,10 @@ def lazy_experiment(folder, p):
     plt.ylabel("CTR ratio (LinUCB)")
     plt.xlabel("Time")
     plt.legend()
-    plt.savefig(f"Results/parallel_seq_linucb.png")
+    plt.savefig(f"Results/{savefile}.png")
 
 
-def non_lazy_experiment(folder, p):
+def non_lazy_experiment(folder, p,savefile):
     articles = get_all_articles()
     # alphas = np.arange(0.01, 0.5, 0.1)
     alphas = [0.3]
@@ -208,7 +208,8 @@ def non_lazy_experiment(folder, p):
                         random_aligned_time_steps, random_cumulative_rewards, random_aligned_ctr, t,p)
                     # ptb('pass 3')
                     break
-            plt.plot(aligned_ctr, label=f"P = {p}, NonLazy")
+            label = f'P = {p}, NonLazy' if p != 1 else 'Sequential'
+            plt.plot(aligned_ctr, label=label)
             # if v == 0.01:
             #     plt.plot(random_aligned_ctr, label=f"Random CTR")
             #     random_results = random_cumulative_rewards
@@ -220,7 +221,7 @@ def non_lazy_experiment(folder, p):
     plt.legend()
     ct = datetime.datetime.now()
     ct = ct.strftime('%Y-%m-%d-%H-%M-%S')
-    plt.savefig(f"Results/parallel_seq_linucb.png")
+    plt.savefig(f"Results/{savefile}.png")
 
 def run():
     ct = datetime.datetime.now()
