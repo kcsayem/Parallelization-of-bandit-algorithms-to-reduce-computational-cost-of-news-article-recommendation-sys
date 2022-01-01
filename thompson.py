@@ -1,4 +1,3 @@
-import numpy as np
 from helper_functions import *
 from numpy.random import default_rng
 import logging
@@ -7,26 +6,22 @@ logger = logging.getLogger(__name__)
 
 
 class ThompsonSampling:
-    def __init__(self, contextDimension, R, c, lmb=1, SEED=42):
+    def __init__(self, d, c, lmb=1, SEED=42):
         self.rng = default_rng()
         self.SEED = SEED
-        self.d = contextDimension
+        self.d = d
         self.B = np.identity(self.d) * lmb
         self.B_inv = np.linalg.inv(self.B)
         self.B_previous = np.copy(self.B)
-        v = c  # * R * math.sqrt(24 * self.d / 0.05 * math.log(1 / 0.05))
-        self.R = R
-        self.c = c
-        self.v_squared = v ** 2
+        self.v_squared = c ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
         self.theta_estimate = self.rng.multivariate_normal(
             self.theta_hat, self.v_squared * self.B_inv, method='cholesky')
         self.doubling_rounds = 0
         self.bandits = []
-        self.regrets = []
 
-    def setUpBandits(self, articleIds):
+    def setup_bandits(self, articleIds):
         self.bandits = [Bandit(articleIds[k]) for k in range(len(articleIds))]
 
     def sample(self):
@@ -42,17 +37,6 @@ class ThompsonSampling:
     def update_iteration(self, context):
         self.B += np.outer(context, context)
         self.B_inv = inverse(self.B_inv, np.outer(context, context))
-
-    def update_batch(self, rewards, contexts):
-        rc_sum = 0
-        bc_sum = 0
-        for i in range(len(contexts)):
-            rc_sum += contexts[i][list(contexts[i].keys())[0]] * rewards[i]
-            bc_sum += np.outer(contexts[i][list(contexts[i].keys())[0]], contexts[i][list(contexts[i].keys())[0]])
-        self.f += rc_sum
-        self.B += bc_sum
-        self.B_inv = inverse(self.B_inv, bc_sum)
-        self.theta_hat = np.dot(self.B_inv, self.f)
 
     def doubling_round(self):
         if ispositivesemidifinate(2 * self.B_previous - self.B):
@@ -83,21 +67,11 @@ class ThompsonSampling:
         estimated_reward = max_value
         return estimated_reward, max_, specific_bandits
 
-    def getEstimate(self):
-        return self.theta_estimate
-
-    def printBandits(self):
+    def print_bandits(self):
         msg = f"Num times selected each bandit: {[b.N for b in self.bandits]}"
         logger.info(msg)
         msg = f"Doubling Rounds: {self.doubling_rounds}"
         logger.info(msg)
-
-    def getRegrets(self):
-        return self.regrets
-
-    def updateV(self, t):
-        v = self.c * self.R * math.sqrt(24 * self.d / 0.05 * math.log(t / 0.05))
-        self.v_squared = v ** 2
 
 
 class Bandit:
@@ -111,8 +85,8 @@ class Bandit:
 
 
 class LazyThompsonSampling(ThompsonSampling):
-    def __init__(self, contextDimension, R, c, lmb, SEED):
-        ThompsonSampling.__init__(self, contextDimension, R, c, lmb, SEED)
+    def __init__(self, d, c, lmb, SEED):
+        ThompsonSampling.__init__(self, d, c, lmb, SEED)
 
     def update_iteration(self, context):
         self.B += np.outer(context, context)
@@ -127,8 +101,8 @@ class LazyThompsonSampling(ThompsonSampling):
 
 
 class NonLazyThompsonSampling(ThompsonSampling):
-    def __init__(self, contextDimension, R, c, lmb, SEED):
-        ThompsonSampling.__init__(self, contextDimension, R, c, lmb, SEED)
+    def __init__(self, d, c, lmb, SEED):
+        ThompsonSampling.__init__(self, d, c, lmb, SEED)
 
     def update_batch(self, rewards, contexts):
         rc_sum = 0
