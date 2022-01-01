@@ -34,10 +34,6 @@ class ThompsonSampling:
         self.B_inv = inverse(self.B_inv, np.outer(context, context))
         self.theta_hat = np.dot(self.B_inv, self.f)
 
-    def update_iteration(self, context):
-        self.B += np.outer(context, context)
-        self.B_inv = inverse(self.B_inv, np.outer(context, context))
-
     def doubling_round(self):
         if ispositivesemidifinate(2 * self.B_previous - self.B):
             self.B_previous = np.copy(self.B)
