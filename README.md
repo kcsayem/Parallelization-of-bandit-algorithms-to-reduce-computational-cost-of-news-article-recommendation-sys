@@ -178,7 +178,7 @@ after reaching the final refined stages of the project have been presented below
 ![](readmeimages/fig7.png)
 
 <img height="217" src="readmeimages/fig8.png" width="283"/>
-<img height="217" src="readmeimages/fig9.png" width="283"/>
+<img height="217" src="readmeimages/fig9.png" width="280"/>
 
 In **figure 4** to **6** above, the plots show curves flattening around constant values of CTR from last third of the 
 experiment. This convergence is indicative of the algorithms learning the true reward of the news articles. The initial 
