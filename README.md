@@ -1,3 +1,10 @@
+<center><h1> Parallelization of bandit algorithms to reduce 
+computational cost of news article recommendation systems.</h1></center>
+
+### Authors: Mubarrat Tajoar Chowdhury<sup>1</sup>, Elkhan Ismailzada<sup>1</sup>, MD Khalequzzaman Chowdhury Sayem<sup>1</sup>
+### Email: {mubarrattajoar, elkan, khalequzzamansayem}@unist.ac.kr
+### Created On: Jan 3, 2021
+
 ## Abstract
 Impacts on performance of bandit algorithms in recommending news article when adapted for recommending to multiple users
 in parallel is studied in this work. The algorithms explored in this work are sequential LinUCB, sequential Thompson 
