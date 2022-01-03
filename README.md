@@ -1,8 +1,8 @@
 <center><h1> Parallelization of bandit algorithms to reduce 
 computational cost of news article recommendation systems.</h1></center>
 
-### Authors: Mubarrat Tajoar Chowdhury<sup>1</sup>, Elkhan Ismailzada<sup>1</sup>, MD Khalequzzaman Chowdhury Sayem<sup>1</sup>
-### Email: {mubarrattajoar, elkan, khalequzzamansayem}@unist.ac.kr
+### Authors: Mubarrat Tajoar Chowdhury<sup>1</sup>, Elkhan Ismayilzada<sup>1</sup>, MD Khalequzzaman Chowdhury Sayem<sup>1</sup>
+### Email: {mubarrattajoar, elkhan, khalequzzamansayem}@unist.ac.kr
 ### Created On: Jan 3, 2021
 
 ## Abstract
