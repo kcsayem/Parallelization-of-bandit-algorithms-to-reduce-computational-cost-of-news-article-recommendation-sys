@@ -19,10 +19,10 @@ current estimate to choose arms to maximize the long-term reward gain from limit
 contextual bandit problems, the reward varies depending not just on the choices themselves but also on the situation 
 under which the choices were made.
 In the analogy of news article recommendation, the news articles are the “arms” a and the reward at time t 
-(denoted as r<sub>t</sub>) would be “1” if the reader(user) to whom it was recommended clicks the recommended article or “0” if 
-the user does not click on the article. The situation or “context” in this scenario is denoted by a vector, denoted as
-x<sub>t,a</sub>, which is derived from information about users(user features) to whom the article Is being recommended, and from
-information about the news(arm features). The derivation is illustrated in **Fig1**
+(denoted as r<sub>t</sub>) would be “1” if the reader(user) to whom it was recommended clicks the recommended article or 
+“0” if the user does not click on the article. The situation or “context” in this scenario is denoted by a vector, 
+denoted as x<sub>t,a</sub>, which is derived from information about users(user features) to whom the article Is being 
+recommended, and from information about the news(arm features). The derivation is illustrated in **Fig1**
 
 ![](readmeimages/fig1.png)
 
@@ -31,13 +31,14 @@ assumed to be linear. This is expressed as:
 
 ![](readmeimages/math1.PNG)
 
-In this work, the algorithms explored are sequential LinUCB<sup>[1]</sup>, parallel Lazy LinUCB<sup>[3]</sup>, parallel Non-Lazy LinUCB<sup>[3]</sup>, 
-sequential Thompson Sampling<sup>[2]</sup>, Lazy Thompson Sampling<sup>[3]</sup> and Non-Lazy Thompson sampling<sup>[3]</sup>. 
-To help with visualization of multitude of users being recommended articles by the algorithm and the limit in spread of 
-information with which the recommendation decisions are made, the concept of a news article “server” or a “worker” is 
-introduced. In sequential versions of LinUCB<sup>[1]</sup> and Thompson Sampling<sup>[2]</sup>, one user is served at a particular time step.
-In parallel versions of the algorithms, which are modified from <sup>[3]</sup>, there are P workers serving news articles in 
-parallel, attending to batches of P users from queue at a particular time step. This distinction is illustrated in 
+In this work, the algorithms explored are sequential LinUCB<sup>[1]</sup>, parallel Lazy LinUCB<sup>[3]</sup>, parallel 
+Non-Lazy LinUCB<sup>[3]</sup>, sequential Thompson Sampling<sup>[2]</sup>, Lazy Thompson Sampling<sup>[3]</sup> and 
+Non-Lazy Thompson sampling<sup>[3]</sup>. To help with visualization of multitude of users being recommended articles by
+the algorithm and the limit in spread of information with which the recommendation decisions are made, the concept of a 
+news article “server” or a “worker” is introduced. In sequential versions of LinUCB<sup>[1]</sup> and Thompson 
+Sampling<sup>[2]</sup>, one user is served at a particular time step. In parallel versions of the algorithms, 
+which are modified from <sup>[3]</sup>, there are P workers serving news articles in parallel, attending to batches of 
+P users from queue at a particular time step. This distinction is illustrated in 
 **figure 2** and **figure 3**.
 
 ![](readmeimages/fig23.png)
@@ -47,7 +48,8 @@ Sequential LinUCB calculates the vector b<sub>t</sub> by the following iterative
 
 ![](readmeimages/math2.PNG)
 
-And then at time t+1, &theta;<sub>t+1</sub> &rarr; V<sup>-1</sup><sub>t+1</sub> b<sub>t</sub> is used to estimate max expected reward for each arm as :
+And then at time t+1, &theta;<sub>t+1</sub> &rarr; V<sup>-1</sup><sub>t+1</sub> b<sub>t</sub> is used to estimate max 
+expected reward for each arm as :
 
 ![](readmeimages/eqn1.PNG)
 
@@ -84,7 +86,8 @@ history of encountered context vectors through the covariance matrix and also th
 corresponding vectors via a parameter 
 b<sub>t</sub> (computed as b<sub>t</sub> &rarr; b<sub>t-1</sub>+x<sub>t,a<sub>t</sub></sub>r<sub>t</sub> )
 when choosing a news article for a particular user.
-The parallelized version of covariance matrix  V<sub>t,p</sub> for Lazy and Non-Lazy algorithm for both Thompson sampling and 
+The parallelized version of covariance matrix  V<sub>t,p</sub> for Lazy and Non-Lazy algorithm for both Thompson 
+sampling and 
 LinUCB are to be used for calculation of estimate of &theta;<sub>t</sub> at time step t are calculated as follows:
 For Lazy, at time t, the cumulative value of covariance, iteratively calculated for each p in order, from the start of 
 the experiment stands at:
@@ -102,19 +105,24 @@ summation induces higher selection of articles which were underexplored given th
 suboptimal articles(articles which do not have highest expected reward given the context at that particular time step)
 earlier in the experiment leads to higher reward in the long term as articles with better expected reward, given the 
 context could be discovered. 
+
 In Non-Lazy Parallel algorithms, at time step t, the entire batch of P workers use the covariance matrix and the pseudo 
 reward count updated at the end of previous time steps, meaning the workers are unaware of the encountered context 
 vector information(via covariance matrix), arm selection and corresponding reward for preceding workers in the same 
 batch. 
+
 This “unawareness” leading to reduced number of computations within the same batch increases serving speed, but the 
 reward is expected to be less because of less information being used during decision making.
 In Lazy Parallel algorithms, the workers in the same batch are aware of the pseudocount of context features encountered
 from t=1 up to preceding workers in the same batch via the covariance matrix V<sub>t,p</sub> but are unaware of the 
-corresponding pseudo feature-reward count that comes with the parameter b<sub>t</sub>. The relative higher extent of information 
+corresponding pseudo feature-reward count that comes with the parameter b<sub>t</sub>. The relative higher extent of 
+information 
 accessibility of preceding workers within the batch leads one to expect higher reward in Lazy compared to Non-Lazy and 
 hence slower speed due to increased computation involved within a batch. 
+
 The specific method of how covariance matrix is used in each of the algorithms to make decision is shown in the sections 
 that follow.
+
 ### 2. Research Purpose
 Purpose of this research has been to find out the extent to which parallelized modification of contextual bandit
 algorithms impact the rewards obtained from recommending news articles to users. The reason parallelized implementation
@@ -122,7 +130,7 @@ of contextual bandit algorithms is desirable, despite the hypothesized superiori
 reward gain, is because of the speed gain and the ability to serve a multitude of users at a single time step. While 
 in-depth analysis of the steps in each of the algorithms reveal the impact on reward and speed to be expected, the
 extent to which the expectations might hold in a practical scenario is investigated using a real-world news article 
-recommendation dataset 
+recommendation dataset .
 ###3. Research Methods
 #### Experiment Procedure
 Dataset used: R6A - Yahoo! Front Page Today Module User Click Log Dataset, version 1.0
@@ -137,11 +145,12 @@ Dataset contents:
 Hyperparameters and parameters are first initialized. At each iteration, user features and article features are used to 
 form the context vector. If the selected article in experiment matches the selected arm in mentioned in the dataset, 
 the rewards for that context is observed.
+
 Taking into account the original papers [1],[2],[3] where the algorithms were first published, the following modified 
 approach to implementing the algorithms were taken:
 
 ![](readmeimages/algo_1.PNG)
-********
+
 ![](readmeimages/algo_2.PNG)
 
 While standalone algorithms for sequential algorithms exist, and were at the initial phase of the project, implemented
@@ -193,8 +202,10 @@ involve running the experiment for scenarios where T>>P, theoretical implication
 sacrificing reward via use of non-Lazy algorithms over Lazy ones to exploit the significantly higher runtime speed. In 
 situations where this scenario does not arise, for covariance related issues discussed before, the resulting less 
 information access of Non-Lazy algorithm is expected lead to loss in rewards. 
+
 As expected, the there is loss in reward for Non-Lazy algorithms, though still the span of difference of converged CTR
-value is less than 0.01. as can be seen in **Figure 6** and **Figure 7**. The speed, as shown in **Figure 9**,for Lazy LinUCB 
+value is less than 0.01. as can be seen in **Figure 6** and **Figure 7**. The speed, as shown in **Figure 9**,for Lazy 
+LinUCB 
 algorithm is 1.89 times faster and Lazy-Thompson Sampling is around 1.68 times faster. This is due to the increased 
 frequency of covariance computation required within a batch.
 
@@ -205,9 +216,16 @@ frequency of covariance computation required within a batch.
 - A new hybrid algorithm currently being studied by the team, which has been possible because of the successful 
   implementations in this work.  
 ### 6.	Expected Contribution / Future Plans
-Parallelization evidently leads to a significant gain in speed at the expense of small loss in reward. However, the ability for a recommendation service to host a vast number of users in a short time is in the interest of service providers, therefore, the small loss in reward is worth sacrificing when a vast number of users require to be served. 
+Parallelization evidently leads to a significant gain in speed at the expense of small loss in reward. However, 
+the ability for a recommendation service to host a vast number of users in a short time is in the interest of service 
+providers, therefore, the small loss in reward is worth sacrificing when a vast number of users require to be served. 
 
-This work is expected to give readers some intuition regarding the extent of speed gain that parallelization can offer at the expense of small decrease in reward. The specific steps within the algorithm that lead to such behavior has been pointed out and discussed and their extent of impact demonstrated using a real-world dataset. Another issue that arises when deploying the algorithms in a practical scenario is deciding which algorithm to use? The future plan of study, which we are working on as we speak, seeks to solve that problem using a hybrid algorithm that aim to learn which versions of algorithms at hand might be suitable given a particular user context.
+This work is expected to give readers some intuition regarding the extent of speed gain that parallelization can offer 
+at the expense of small decrease in reward. The specific steps within the algorithm that lead to such behavior has been 
+pointed out and discussed and their extent of impact demonstrated using a real-world dataset. Another issue that arises 
+when deploying the algorithms in a practical scenario is deciding which algorithm to use? The future plan of study, 
+which we are working on as we speak, seeks to solve that problem using a hybrid algorithm that aim to learn which 
+versions of algorithms at hand might be suitable given a particular user context.
 
 ### 7. References
 - Chu, Wei, et al. "Contextual bandits with linear payoff functions." Proceedings of the Fourteenth International 
