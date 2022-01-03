@@ -29,7 +29,7 @@ information about the news(arm features). The derivation is illustrated in **Fig
 In the algorithms to be discussed here, The expected reward function for all the algorithms given the context vector is
 assumed to be linear. This is expressed as:
 
-![](readmeimages/math1.png)
+![equation1](readmeimages/math1.png)
 
 In this work, the algorithms explored are sequential LinUCB<sup>[1]</sup>, parallel Lazy LinUCB<sup>[3]</sup>, parallel Non-Lazy LinUCB<sup>[3]</sup>, 
 sequential Thompson Sampling<sup>[2]</sup>, Lazy Thompson Sampling<sup>[3]</sup> and Non-Lazy Thompson sampling<sup>[3]</sup>. 
