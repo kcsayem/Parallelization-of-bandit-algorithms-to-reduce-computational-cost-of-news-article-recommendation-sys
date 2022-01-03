@@ -45,7 +45,7 @@ parallel, attending to batches of P users from queue at a particular time step. 
 The following discussion are about steps in algorithm elaborated in “Research Methods” Section.
 Sequential LinUCB calculates the vector b<sub>t</sub> by the following iterative update :
 
-![](readmeimages/math2.png)
+![](readmeimages/math2.PNG)
 
 And then at time t+1, &theta;<sub>t+1</sub> &rarr; V<sup>-1</sup><sub>t+1</sub> b<sub>t</sub> is used to estimate max expected reward for each arm as :
 
@@ -66,18 +66,18 @@ the estimate above is then used as a mean for the following normal distrubution:
 The distribution above is then sampled from to get an estimate for \theta to be then used to compute ,before a 
 particular arm is selected, maximum reward estimate for each arm given by the expression below: 
 
-![](readmeimages/math7.png)
+![](readmeimages/math7.PNG)
 
 Upon observing the rewards and updating all the relevant parameters , the worker receives the next user
 in queue for the next iteration
 The sequential algorithms keep a pseudocount of features encountered in previous time steps using a covariance matrix
 V<sub>t</sub>, whose value at time t is computed as: 
 
-![](readmeimages/eqn2.png)
+![](readmeimages/eqn2.PNG)
 
 or iteratively as: 
 
-![](readmeimages/math8.png)
+![](readmeimages/math8.PNG)
 
 The sole worker in sequential algorithms uses the entire 
 history of encountered context vectors through the covariance matrix and also the pseudocount of rewards for
@@ -89,12 +89,12 @@ LinUCB are to be used for calculation of estimate of &theta;<sub>t</sub> at time
 For Lazy, at time t, the cumulative value of covariance, iteratively calculated for each p in order, from the start of 
 the experiment stands at:
 
-![](readmeimages/eqn3.png)
+![](readmeimages/eqn3.PNG)
 
 For Non-Lazy at time t, each of the p workers use the same covariance matrix, the cumulative value of covariance from 
 the start of the experiment stands at:
 
-![](readmeimages/eqn4.png)
+![](readmeimages/eqn4.PNG)
 
 In covariance matrix for Lazy the additional term of sum outer product of context vector for corresponding selected arm
 by preceding workers leads to more variable selection of arms within the batch, more specifically, this additional 
@@ -132,7 +132,7 @@ Dataset contents:
     6 user features, 6 Article features, ID of the article being displayed to the user
     observed reward for the article shown, pool of article ID's at time t from which article to be displayed is chosen.
 
-![](readmeimages/eqn5.png)
+![](readmeimages/eqn5.PNG)
 
 Hyperparameters and parameters are first initialized. At each iteration, user features and article features are used to 
 form the context vector. If the selected article in experiment matches the selected arm in mentioned in the dataset, 
@@ -140,9 +140,9 @@ the rewards for that context is observed.
 Taking into account the original papers [1],[2],[3] where the algorithms were first published, the following modified 
 approach to implementing the algorithms were taken:
 
-![](readmeimages/algo_1.png)
+![](readmeimages/algo_1.PNG)
 ********
-![](readmeimages/algo_2.png)
+![](readmeimages/algo_2.PNG)
 
 While standalone algorithms for sequential algorithms exist, and were at the initial phase of the project, implemented
 as such, the sequential algorithms turn out to be a special case of the parallelized algorithms when the number of 
@@ -150,7 +150,7 @@ workers, p, is set as 1. So, the results for sequential algorithms presented her
 parallelized algorithms, similar to how it’s illustrated in [3]
 For efficient computation of inverse of covariance matrix, the following derivation, using the work of Kennet S 
 Miller[4], was used:
-![](readmeimages/eqn6.png)
+![](readmeimages/eqn6.PNG)
 
 This computation allows us to avoid an expensive inverse calculation after every 
 update of covariance matrix. Instead the inverse calculated in previous time step could be used with the outer product 
@@ -184,7 +184,7 @@ in Non-Lazy Parallel Thompson Sampling as illustrated in **Figure 8**.
 
 #### Lazy Parallel vs Non-Lazy Parallel algorithms
 
-![](readmeimages/eqn7.png)
+![](readmeimages/eqn7.PNG)
 
 The covariance calculation formula above, for Lazy algorithms differ from the Non-lazy in that the latter’s covariance
 formula does include the last summation term. Therefore, when experiment has progressed long enough so that T*P >> P, 
@@ -217,7 +217,3 @@ This work is expected to give readers some intuition regarding the extent of spe
 - Chan, Jeffrey, et al. "Parallelizing Contextual Linear Bandits." arXiv preprint arXiv:2105.10590 (2021).
 - Miller, Kenneth S. “On the Inverse of the Sum of Matrices.” Mathematics Magazine, vol. 54, no. 2, Mathematical
   Association of America, 1981, pp. 67–72, https://doi.org/10.2307/2690437.
-
-
-
-
