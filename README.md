@@ -222,7 +222,9 @@ frequency of covariance computation required within a batch.
   algorithms and following successful tested on a real-world news article recommendation dataset that confirms 
   hypothesis implied by the algorithm steps.
 - A new hybrid algorithm currently being studied by the team, which has been possible because of the successful 
-  implementations in this work.  
+  implementations in this work.
+
+
 ### 6.	Expected Contribution / Future Plans
 Parallelization evidently leads to a significant gain in speed at the expense of small loss in reward. However, 
 the ability for a recommendation service to host a vast number of users in a short time is in the interest of service 
@@ -236,10 +238,10 @@ which we are working on as we speak, seeks to solve that problem using a hybrid 
 versions of algorithms at hand might be suitable given a particular user context.
 
 ### 7. References
-- Chu, Wei, et al. "Contextual bandits with linear payoff functions." Proceedings of the Fourteenth International 
+1. Chu, Wei, et al. "Contextual bandits with linear payoff functions." Proceedings of the Fourteenth International 
   Conference on Artificial Intelligence and Statistics. JMLR Workshop and Conference Proceedings, 2011.
-- Agrawal, Shipra, and Navin Goyal. "Thompson sampling for contextual bandits with linear payoffs." International 
+2. Agrawal, Shipra, and Navin Goyal. "Thompson sampling for contextual bandits with linear payoffs." International 
   Conference on Machine Learning. PMLR, 2013.
-- Chan, Jeffrey, et al. "Parallelizing Contextual Linear Bandits." arXiv preprint arXiv:2105.10590 (2021).
-- Miller, Kenneth S. “On the Inverse of the Sum of Matrices.” Mathematics Magazine, vol. 54, no. 2, Mathematical
+3. Chan, Jeffrey, et al. "Parallelizing Contextual Linear Bandits." arXiv preprint arXiv:2105.10590 (2021).
+4. Miller, Kenneth S. “On the Inverse of the Sum of Matrices.” Mathematics Magazine, vol. 54, no. 2, Mathematical
   Association of America, 1981, pp. 67–72, https://doi.org/10.2307/2690437.
