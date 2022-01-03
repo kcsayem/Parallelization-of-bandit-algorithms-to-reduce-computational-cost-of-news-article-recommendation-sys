@@ -29,7 +29,7 @@ information about the news(arm features). The derivation is illustrated in **Fig
 In the algorithms to be discussed here, The expected reward function for all the algorithms given the context vector is
 assumed to be linear. This is expressed as:
 
-![](readmeimages/math1.png)
+![](readmeimages/math1.PNG)
 
 In this work, the algorithms explored are sequential LinUCB<sup>[1]</sup>, parallel Lazy LinUCB<sup>[3]</sup>, parallel Non-Lazy LinUCB<sup>[3]</sup>, 
 sequential Thompson Sampling<sup>[2]</sup>, Lazy Thompson Sampling<sup>[3]</sup> and Non-Lazy Thompson sampling<sup>[3]</sup>. 
@@ -49,7 +49,7 @@ Sequential LinUCB calculates the vector b<sub>t</sub> by the following iterative
 
 And then at time t+1, &theta;<sub>t+1</sub> &rarr; V<sup>-1</sup><sub>t+1</sub> b<sub>t</sub> is used to estimate max expected reward for each arm as :
 
-![](readmeimages/eqn1.png)
+![](readmeimages/eqn1.PNG)
 
 where &alpha; is a hyperparameter that encourages higher selection frequency for underexplored arms. The arm/article 
 with the highest reward estimate is then chosen to be recommended.
@@ -57,11 +57,11 @@ with the highest reward estimate is then chosen to be recommended.
 In case of Thompson Sampling algorithm, all parameter updates are the same except at the two following points.
 The following update remains the same in both Thompson sampling and LinUCB: 
 
-![](readmeimages/math6.png)
+![](readmeimages/math6.PNG)
 
 the estimate above is then used as a mean for the following normal distrubution: 
 
-![](readmeimages/math5.png)
+![](readmeimages/math5.PNG)
 
 The distribution above is then sampled from to get an estimate for \theta to be then used to compute ,before a 
 particular arm is selected, maximum reward estimate for each arm given by the expression below: 
