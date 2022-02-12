@@ -37,7 +37,7 @@ def yahoo_experiment_non_lazy(path, v, articles, ts, aligned_time_steps, cumulat
         # break
         arm_indexes = []
         for c in range(len(contexts)):
-            arm_index, specific_bandits = ts.select_arm(contexts[c])
+            arm_index, specific_bandits = ts.pull(contexts[c])
             arm_indexes.append(arm_index)
         for r in range(len(contexts)):
             # random_index = np.random.choice(specific_bandits).index
@@ -93,7 +93,7 @@ def yahoo_experiment_lazy(path, v, articles, ts, aligned_time_steps, cumulative_
         # break
         arm_indexes = []
         for c in range(len(contexts)):
-            arm_index, specific_bandits = ts.select_arm(contexts[c])
+            arm_index, specific_bandits = ts.pull(contexts[c])
             ts.reward_update_iteration(contexts[c][arm_index])
             arm_indexes.append(arm_index)
         for r in range(len(contexts)):
@@ -138,7 +138,7 @@ def lazy_experiment(folder, p, savefile):
             ptb(f"Trying alpha = {v}, lambda = {lmd}, p = {p}")
             # ptb("==================================================================================")
             ts = LazyLinUCB(len(articles), len(articles) * 6 + 6,v,lmd)
-            ts.setup_arms(articles)
+            ts.setup_bandits(articles)
             aligned_time_steps = 0
             random_aligned_time_steps = 0
             cumulative_rewards = 0
@@ -162,7 +162,7 @@ def lazy_experiment(folder, p, savefile):
             #     plt.plot(random_aligned_ctr, label=f"Random CTR")
             #     random_results = random_cumulative_rewards
             ptb(f"total reward earned from Linucb: {cumulative_rewards}" )
-            ts.printBandits()
+            ts.print_bandits()
     # ptb(f"total reward earned from Random: {random_results}")
     ct = datetime.datetime.now()
     ct = ct.strftime('%Y-%m-%d-%H-%M-%S')
@@ -188,7 +188,7 @@ def non_lazy_experiment(folder, p,savefile):
             ptb(f"Trying alpha = {v}, lambda = {lmd}, p = {p}")
             # ptb("==================================================================================")
             ts = NonLazyLinUCB(len(articles), len(articles) * 6 + 6,v,lmd)
-            ts.setup_arms(articles)
+            ts.setup_bandits(articles)
             aligned_time_steps = 0
             random_aligned_time_steps = 0
             cumulative_rewards = 0
@@ -214,7 +214,7 @@ def non_lazy_experiment(folder, p,savefile):
             #     plt.plot(random_aligned_ctr, label=f"Random CTR")
             #     random_results = random_cumulative_rewards
             ptb(f"total reward earned from Linucb: {cumulative_rewards}")
-            ts.printBandits()
+            ts.print_bandits()
     # ptb(f"total reward earned from Random: random_results")
     plt.ylabel("CTR ratio (LinUCB)")
     plt.xlabel("Time")
@@ -262,11 +262,11 @@ def sequential_experiment(path, v, articles, ts, aligned_time_steps, cumulative_
         context = makeContext(pool_articles, user_features, articles)
         # print(context)
         # break
-        arm_index, random_index = ts.select_arm(context)
+        arm_index, random_index = ts.pull(context)
         # random_index = np.random.choice(specific_bandits).index
         if arm_index == int(articleID):
             # Use reward information for the chosen arm to update
-            ts.reward_update(click, context[arm_index])
+            ts.update(click, context[arm_index])
             # For CTR calculation
             aligned_time_steps += 1
             cumulative_rewards += click
@@ -290,7 +290,7 @@ def experiment(folder):
     for v in v_s:
         v = float("{:.2f}".format(v))
         ts = LinUCB(len(articles), len(articles) * 6 + 6,v)
-        ts.setup_arms(articles)
+        ts.setup_bandits(articles)
         aligned_time_steps = 0
         random_aligned_time_steps = 0
         cumulative_rewards = 0
@@ -309,7 +309,7 @@ def experiment(folder):
         #     plt.plot(random_aligned_ctr, label=f"Random CTR")
         #     random_results = random_cumulative_rewards
         logging.info(f"total reward earned from LinUCB: {cumulative_rewards}")
-        ts.printBandits()
+        ts.print_bandits()
     # print("total reward earned from Random:", random_results)
     plt.ylabel("CTR ratio (LinUCB)")
     plt.xlabel("Time")

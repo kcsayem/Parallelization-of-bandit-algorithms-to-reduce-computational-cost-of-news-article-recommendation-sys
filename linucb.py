@@ -74,10 +74,10 @@ class LinUCB:
         # self.theta = _calc_theta(self.A, self.b)
         return self.theta
 
-    def setup_arms(self, article_ids):
+    def setup_bandits(self, article_ids):
         self.linucb_arms = [linucb_arm(article_ids[k], self.alpha) for k in range(len(article_ids))]
 
-    def reward_update(self, reward, x):
+    def update(self, reward, x):
         # Reshape covariates input into (d x 1) shape vector
         x = x.reshape([-1, 1])
 
@@ -89,14 +89,14 @@ class LinUCB:
         # reward is scalar
         self.b += reward * x
 
-    def printBandits(self):
+    def print_bandits(self):
         # print("num times selected each bandit:", [b.N for b in self.linucb_arms])
         msg = f"Num times selected each bandit: {[b.N for b in self.linucb_arms]}"
         logger.info(msg)
         msg = f"Doubling Rounds: {self.doubling_rounds}"
         logger.info(msg)
 
-    def select_arm(self, context):
+    def pull(self, context):
         # selecting arms for specific times
         specific_bandits = []
         for key in context:
@@ -138,7 +138,7 @@ class LinUCB:
 
         # random choosen_arm
         random = np.random.choice(specific_bandits)
-        return chosen_arm, random.index
+        return 0, chosen_arm, random.index
 
 
 class LazyLinUCB(LinUCB):

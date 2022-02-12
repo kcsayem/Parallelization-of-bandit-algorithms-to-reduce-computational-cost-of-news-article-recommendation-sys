@@ -276,7 +276,12 @@ def merge_files(folder):
                 break
         if length>=10000:
             break
-
+def make_dict_arms():
+    articles = get_all_articles()
+    temp = {}
+    for art in articles:
+        temp[art] = 0
+    return temp
 if __name__ == "__main__":
     # print(num_articles("data/R6A_spec"))
     # print_example_banner("EXPERIMENT")
