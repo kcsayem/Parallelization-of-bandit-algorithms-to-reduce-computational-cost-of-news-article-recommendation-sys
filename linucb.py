@@ -91,10 +91,11 @@ class LinUCB:
 
     def print_bandits(self):
         # print("num times selected each bandit:", [b.N for b in self.linucb_arms])
-        msg = f"Num times selected each bandit: {[b.N for b in self.linucb_arms]}"
+        logging.info(f"alpha for LinUCB: {self.alpha}")
+        msg = f"Num times selected each bandit for LinUCB: {[b.N for b in self.linucb_arms]}"
         logger.info(msg)
-        msg = f"Doubling Rounds: {self.doubling_rounds}"
-        logger.info(msg)
+        # msg = f"Doubling Rounds: {self.doubling_rounds}"
+        # logger.info(msg)
 
     def pull(self, context):
         # selecting arms for specific times

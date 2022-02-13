@@ -13,6 +13,7 @@ class ThompsonSampling:
         self.B = np.identity(self.d) * lmb
         self.B_inv = np.linalg.inv(self.B)
         self.B_previous = np.copy(self.B)
+        self.alpha = c
         self.v_squared = c ** 2
         self.f = np.zeros(self.d)
         self.theta_hat = np.zeros(self.d)
@@ -64,10 +65,11 @@ class ThompsonSampling:
         return estimated_reward, max_, specific_bandits
 
     def print_bandits(self):
-        msg = f"Num times selected each bandit: {[b.N for b in self.bandits]}"
+        logging.info(f"alpha for Thompson Sampling: {self.alpha}")
+        msg = f"Num times selected each bandit for Thompson Sampling: {[b.N for b in self.bandits]}"
         logger.info(msg)
-        msg = f"Doubling Rounds: {self.doubling_rounds}"
-        logger.info(msg)
+        # msg = f"Doubling Rounds: {self.doubling_rounds}"
+        # logger.info(msg)
 
 
 class Bandit:
