@@ -5,7 +5,7 @@ computational cost of news article recommendation systems.</h1></center>
 
 <b> <center> Email: {mubarrattajoar, elkhan, khalequzzamansayem}@unist.ac.kr </center></b>
  
-<b><center>Created On: Jan 3, 2021</center></b>
+<b><center>Created On: Jan 3, 2022</center></b>
 
 ## Abstract
 Impacts on performance of bandit algorithms in recommending news article when adapted for recommending to multiple users
